@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Vincious Jamal is a product designer and front-end developer creating clear, human digital experiences.">
+    <title>Vincious Jamal | Product designer & developer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root { --ink: #152f19; --paper: #f3f0ff; --lime: #f05a9d; --orange: #4b6fff; --muted: #746b76; --line: #e4cfd9; }
+        .nav-availability span { background: var(--orange); }
+        .about-details.reveal { transform: translateX(-32px); }
+        .about-details.reveal.visible { transform: translateX(0); }
+        .hire-me.reveal { transform: translateY(-24px); }
+        .hire-me.reveal.visible { transform: translateY(0); }
+        @keyframes portrait-float {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-12px) rotate(1deg); }
+        }
+        @keyframes orbit-drift {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes sticker-drift {
+            0%, 100% { transform: translate(0, 0) rotate(-6deg); }
+            50% { transform: translate(5px, -8px) rotate(-2deg); }
+        }
+        @keyframes hire-blink {
+            0%, 42%, 100% { opacity: 1; }
+            50%, 58% { opacity: .45; }
+        }
+        .portrait-shape { animation: portrait-float 5s ease-in-out infinite; }
+        .orbit-one { animation: orbit-drift 18s linear infinite; }
+        .orbit-two { animation: orbit-drift 26s linear reverse infinite; }
+        .art-sticker { animation: sticker-drift 4s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+            .about-details.reveal,
+            .hire-me.reveal { transform: none; }
+            .portrait-shape,
+            .orbit-one,
+            .orbit-two,
+            .art-sticker,
+            .floating-hire { animation: none; }
+        }
+        .developer-gallery { display: grid; gap: 18px; grid-template-columns: 1.15fr 1fr 1fr; margin-top: 70px; }
+        .developer-gallery figure { margin: 0; }
+        .developer-gallery figure:first-child { transform: translateY(24px); }
+        .developer-gallery img { aspect-ratio: 4 / 3; display: block; filter: saturate(.82); object-fit: cover; width: 100%; }
+        .developer-gallery figure:first-child img { aspect-ratio: 4 / 4.5; }
+        .developer-gallery figcaption { font-family: 'DM Mono', monospace; font-size: 10px; margin-top: 12px; text-transform: uppercase; }
+        .image-colouring { background: url('https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&amp;fit=crop&amp;w=1200&amp;q=85') center / cover; }
+        .colouring-window { align-items: center; background: var(--lime); color: var(--ink); display: flex; font-family: Georgia, serif; font-size: clamp(28px, 4vw, 52px); height: 66%; justify-content: center; left: 12%; letter-spacing: -.06em; position: absolute; text-align: center; top: 18%; transform: rotate(-4deg); width: 76%; }
+        .colouring-window i { color: var(--orange); display: block; font-size: .72em; }
+        .profile-image { border-radius: 48% 52% 38% 62%; bottom: -55px; height: 380px; left: 85px; object-fit: cover; position: absolute; transform: rotate(-18deg); width: 280px; z-index: 1; }
+        @media (max-width: 700px) {
+            .developer-gallery { gap: 22px; grid-template-columns: 1fr 1fr; margin-top: 52px; }
+            .developer-gallery figure:first-child { grid-column: span 2; transform: none; }
+            .developer-gallery figure:first-child img { aspect-ratio: 16 / 9; }
+            .developer-gallery img { aspect-ratio: 1 / 1; }
+            .developer-gallery figcaption { font-size: 9px; }
+        }
+        .floating-hire { align-items: center; animation: hire-blink 3.2s ease-in-out infinite; background: var(--ink); color: var(--paper); display: flex; font-family: 'DM Mono', monospace; font-size: 9px; gap: 7px; letter-spacing: .08em; padding: 9px 12px; position: fixed; right: 22px; text-transform: uppercase; top: 20px; transition: background .2s, transform .2s; z-index: 10; }
+        .floating-hire::before { background: var(--orange); border-radius: 50%; content: ''; height: 6px; width: 6px; }
+        .floating-hire::after { content: '↗'; font-size: 12px; line-height: 0; }
+        .floating-hire:hover { background: var(--orange); transform: translateY(-2px); }
+        @media (max-width: 700px) { .floating-hire { bottom: 16px; left: 20px; justify-content: center; right: 20px; top: auto; } }
+    </style>
+</head>
+<body>
+    <header class="site-header"><a class="brand" href="#top"><span class="brand-mark">V</span> Vincious Jamal</a><button class="menu-toggle" aria-label="Open navigation" aria-expanded="false"><span></span><span></span></button><nav class="nav-links" aria-label="Main navigation"><a href="#work">Work</a><a href="#about">About</a><a href="#contact">Contact</a><a class="nav-availability hire-me reveal" href="#contact"><span></span> Available for work</a></nav></header>
+    <main id="top">
+        <section class="hero section-wrap"><div class="hero-copy"><p class="eyebrow reveal">Software Engineer <span>+</span> AI problem resolver</p><h1 class="reveal">I make digital things feel <em>obvious.</em></h1><p class="hero-intro reveal">I’m a Software Engineer from the University of Nairobi, and I help ambitious teams turn complex ideas into clear, useful products and smarter AI-driven digital experiences people actually enjoy using.</p><div class="hero-actions reveal"><a class="button button-dark" href="#work">See selected work <span>↓</span></a><a class="text-link" href="#contact">Start a conversation <span>↗</span></a></div></div><div class="hero-art reveal" aria-label="Profile photo"><div class="art-label">Based in Lisbon<br>Working worldwide</div><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="portrait-shape"></div><div class="art-sticker">Think<br>clearly<span>✳</span></div></div><div class="scroll-cue"><span>Scroll to explore</span><i></i></div></section>
+        <section id="work" class="work section-wrap"><div class="section-heading"><p class="eyebrow">01 / Selected work</p><h2>A few things I’ve<br><em>helped bring to life.</em></h2></div><div class="project-grid"><a class="project project-featured reveal" href="#contact"><div class="project-image image-lumen"><span class="image-tag">Fintech · 2024</span><div class="mockup-card"><small>YOUR MONEY, CLEARLY</small><strong>$24,680<span>.00</span></strong><div class="chart"></div></div></div><div class="project-meta"><div><h3>Lumen Finance</h3><p>A calmer way to understand your money.</p></div><span class="project-arrow">↗</span></div></a><a class="project reveal" href="#contact"><div class="project-image image-moss"><span class="image-tag">Climate · 2023</span><div class="moss-window"><span>FIELD NOTES</span><strong>Small actions.<br><i>Real change.</i></strong></div></div><div class="project-meta"><div><h3>Moss Journal</h3><p>Making sustainability personal.</p></div><span class="project-arrow">↗</span></div></a><a class="project reveal" href="#contact"><div class="project-image image-arc"><span class="image-tag">Culture · 2023</span><div class="arc-type">ARC<br><i>magazine</i></div><div class="arc-line"></div></div><div class="project-meta"><div><h3>Arc Magazine</h3><p>A new perspective on modern culture.</p></div><span class="project-arrow">↗</span></div></a><a class="project reveal" href="#contact"><div class="project-image image-colouring"><span class="image-tag">Creative · 2026</span><div class="colouring-window">Colour<br><i>freely.</i></div></div><div class="project-meta"><div><h3>Colouring Project</h3><p>A playful visual project built around colour and expression.</p></div><span class="project-arrow">↗</span></div></a></div></section>
+        <section id="about" class="about section-wrap"><div class="section-heading"><p class="eyebrow">02 / A little about me</p><h2>Curious by nature.<br><em>Useful by design.</em></h2></div><div class="about-content"><p class="about-lead">I’m Vincious, a multidisciplinary creative who likes working where strategy, design, and technology overlap.</p><div class="about-details reveal"><p>For the last 8 years, I’ve partnered with early-stage founders and thoughtful teams to make their next chapter clearer. My work is equal parts asking better questions and making better things.</p><a class="text-link" href="#contact">Ondieki Champion of Developer 2026 <span>↗</span></a></div></div><div class="services"><span>What I do</span><div><b>Product strategy</b><b>Interface design</b><b>Creative development</b></div></div></section>
+        <section id="contact" class="contact section-wrap"><p class="eyebrow">03 / Have a good one?</p><h2>Let’s make something<br><em>worth talking about.</em></h2><span class="contact-email">Ondieki Champion of Developer 2026 <span>✦</span></span><a class="contact-phone" href="tel:0118237749">0118237749 <span>↗</span></a></section>
+    </main><footer><span>© 2024 Vincious Jamal</span><span>Made with intent, and a little coffee.</span><div class="social-links"><a href="https://facebook.com/vinciousjamal" target="_blank" rel="noopener noreferrer">Facebook</a><a href="https://wa.me/0000000000" target="_blank" rel="noopener noreferrer">WhatsApp</a><a href="https://instagram.com/vinciousjamal" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/in/vinciousjamal" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://t.me/vinciousjamal" target="_blank" rel="noopener noreferrer">Telegram</a><a href="https://yoba.example/vinciousjamal" target="_blank" rel="noopener noreferrer">Yoba</a><a href="https://x.com/vinciousjamal" target="_blank" rel="noopener noreferrer">Twitter / X</a><a href="https://www.google.com/profiles/vinciousjamal" target="_blank" rel="noopener noreferrer">Google</a><a href="https://tiktok.com/@vinciousjamal" target="_blank" rel="noopener noreferrer">TikTok</a></div></footer><a class="floating-hire" href="#contact">Hire me</a><script src="script.js"></script>
+</body>
+</html>.
