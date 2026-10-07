@@ -1,0 +1,169 @@
+name: ondoa-shida-backend
+
+x-service: &service-base
+  build:
+    context: .
+  restart: unless-stopped
+  depends_on:
+    rabbitmq:
+      condition: service_healthy
+    postgres:
+      condition: service_healthy
+    mongodb:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  environment: &service-environment
+    NODE_ENV: ${NODE_ENV:-development}
+    AMQP_URL: amqp://devuser:devpassword-change-me@rabbitmq:5672
+    OIDC_ISSUER: ${OIDC_ISSUER:-}
+    OIDC_AUDIENCE: ${OIDC_AUDIENCE:-ondoa-api}
+    OIDC_JWKS_URL: ${OIDC_JWKS_URL:-}
+    OIDC_MFA_AMR_VALUES: ${OIDC_MFA_AMR_VALUES:-mfa,otp,webauthn}
+    PORT: "3000"
+  healthcheck:
+    test:
+      - CMD
+      - node
+      - -e
+      - fetch('http://127.0.0.1:3000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+    interval: 10s
+    timeout: 3s
+    retries: 5
+    start_period: 10s
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ondoa
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpassword-change-me
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U devuser -d ondoa]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:8
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: devuser
+      MONGO_INITDB_ROOT_PASSWORD: devpassword-change-me
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "127.0.0.1:27017:27017"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mongosh --quiet --username "$$MONGO_INITDB_ROOT_USERNAME" --password "$$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "db.adminCommand('ping').ok"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: [redis-server, --appendonly, "yes", --requirepass, devpassword-change-me]
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: [CMD-SHELL, redis-cli -a devpassword-change-me ping | grep PONG]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    environment:
+      RABBITMQ_DEFAULT_USER: devuser
+      RABBITMQ_DEFAULT_PASS: devpassword-change-me
+    ports:
+      - "127.0.0.1:15672:15672"
+    healthcheck:
+      test: [CMD, rabbitmq-diagnostics, -q, ping]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  loan-service:
+    <<: *service-base
+    environment:
+      <<: *service-environment
+      SERVICE_NAME: loan-service
+      DATABASE_URL: postgresql://devuser:devpassword-change-me@postgres:5432/ondoa
+      REDIS_URL: redis://:devpassword-change-me@redis:6379/0
+      AWS_REGION: ${AWS_REGION:-}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-}
+      AWS_S3_KMS_KEY_ID: ${AWS_S3_KMS_KEY_ID:-}
+      AWS_CONFIG_KMS_KEY_ID: ${AWS_CONFIG_KMS_KEY_ID:-}
+
+  risk-service:
+    <<: *service-base
+    environment:
+      <<: *service-environment
+      SERVICE_NAME: risk-service
+
+  user-service:
+    <<: *service-base
+    environment:
+      <<: *service-environment
+      SERVICE_NAME: user-service
+      REDIS_URL: redis://:devpassword-change-me@redis:6379/0
+
+  payment-service:
+    <<: *service-base
+    environment:
+      <<: *service-environment
+      SERVICE_NAME: payment-service
+
+  notification-service:
+    <<: *service-base
+    environment:
+      <<: *service-environment
+      SERVICE_NAME: notification-service
+
+  compliance-service:
+    <<: *service-base
+    environment:
+      <<: *service-environment
+      SERVICE_NAME: compliance-service
+      MONGODB_URI: mongodb://devuser:devpassword-change-me@mongodb:27017/ondoa?authSource=admin
+
+  kong:
+    image: kong:3.9
+    depends_on:
+      loan-service:
+        condition: service_healthy
+      risk-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      compliance-service:
+        condition: service_healthy
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: "off"
+      KONG_LOG_LEVEL: warn
+    volumes:
+      - ./kong.yml:/etc/kong/kong.yml:ro
+    ports:
+      - "127.0.0.1:8000:8000"
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:

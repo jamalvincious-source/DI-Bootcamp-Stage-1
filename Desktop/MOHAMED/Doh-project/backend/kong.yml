@@ -1,0 +1,61 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: loan-service
+    url: http://loan-service:3000
+    routes:
+      - name: loan-health
+        paths:
+          - /api/v1/loan
+        strip_path: true
+        methods: [GET, POST, PUT, PATCH, DELETE]
+  - name: risk-service
+    url: http://risk-service:3000
+    routes:
+      - name: risk-health
+        paths:
+          - /api/v1/risk
+        strip_path: true
+        methods: [GET, POST, PUT, PATCH, DELETE]
+
+  - name: user-service
+    url: http://user-service:3000
+    routes:
+      - name: user-health
+        paths:
+          - /api/v1/users
+        strip_path: true
+        methods: [GET, POST, PUT, PATCH, DELETE]
+  - name: payment-service
+    url: http://payment-service:3000
+    routes:
+      - name: payment-health
+        paths:
+          - /api/v1/payments
+        strip_path: true
+        methods: [GET, POST, PUT, PATCH, DELETE]
+
+  - name: notification-service
+    url: http://notification-service:3000
+    routes:
+      - name: notification-health
+        paths:
+          - /api/v1/notifications
+        strip_path: true
+        methods: [GET, POST, PUT, PATCH, DELETE]
+
+  - name: compliance-service
+    url: http://compliance-service:3000
+    routes:
+      - name: compliance-health
+        paths:
+          - /api/v1/compliance
+        strip_path: true
+        methods: [GET, POST, PUT, PATCH, DELETE]
+
+plugins:
+  - name: rate-limiting
+    config:
+      minute: 120
+      policy: local

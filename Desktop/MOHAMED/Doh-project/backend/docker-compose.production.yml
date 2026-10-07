@@ -1,0 +1,55 @@
+name: ondoa-shida-production
+
+x-production-environment: &production-environment
+  NODE_ENV: production
+  AMQP_URL: ${AMQP_TLS_URL:?Set AMQP_TLS_URL to the managed amqps endpoint}
+  OIDC_ISSUER: ${OIDC_ISSUER:?Set the OIDC issuer}
+  OIDC_AUDIENCE: ${OIDC_AUDIENCE:?Set the OIDC audience}
+  OIDC_JWKS_URL: ${OIDC_JWKS_URL:?Set the HTTPS OIDC JWKS URL}
+  OIDC_MFA_AMR_VALUES: ${OIDC_MFA_AMR_VALUES:-mfa,otp,webauthn}
+
+services:
+  loan-service:
+    environment:
+      <<: *production-environment
+      DATABASE_URL: ${DATABASE_TLS_URL:?Set a PostgreSQL URL with sslmode=verify-full}
+      REDIS_URL: ${REDIS_TLS_URL:?Set a rediss Redis URL}
+      AWS_REGION: ${AWS_REGION:?Set AWS_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:?Set a private S3 bucket}
+      AWS_S3_KMS_KEY_ID: ${AWS_S3_KMS_KEY_ID:?Set the S3 KMS key ID}
+      AWS_CONFIG_KMS_KEY_ID: ${AWS_CONFIG_KMS_KEY_ID:?Set the config KMS key ID}
+
+  risk-service:
+    environment:
+      <<: *production-environment
+
+  user-service:
+    environment:
+      <<: *production-environment
+      REDIS_URL: ${REDIS_TLS_URL:?Set a rediss Redis URL}
+
+  payment-service:
+    environment:
+      <<: *production-environment
+
+  notification-service:
+    environment:
+      <<: *production-environment
+
+  compliance-service:
+    environment:
+      <<: *production-environment
+      MONGODB_URI: ${MONGODB_TLS_URI:?Set a MongoDB TLS URI}
+
+  kong:
+    environment:
+      KONG_PROXY_LISTEN: 0.0.0.0:8443 ssl
+      KONG_SSL_PROTOCOLS: TLSv1.3
+      KONG_SSL_CERT: /run/kong-tls/tls.crt
+      KONG_SSL_CERT_KEY: /run/kong-tls/tls.key
+    volumes:
+      - ./kong.yml:/etc/kong/kong.yml:ro
+      - ${KONG_TLS_CERT_FILE:?Set the mounted gateway TLS certificate path}:/run/kong-tls/tls.crt:ro
+      - ${KONG_TLS_KEY_FILE:?Set the mounted gateway TLS private key path}:/run/kong-tls/tls.key:ro
+    ports:
+      - "0.0.0.0:443:8443"
