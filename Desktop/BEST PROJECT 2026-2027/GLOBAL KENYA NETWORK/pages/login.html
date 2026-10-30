@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Log In | Global Network Kenya</title>
+    <link rel="stylesheet" href="../style.css" />
+    <script src="../js/app.js" defer></script>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f5f8fc;
+        color: #172b4d;
+      }
+      .auth-shell {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 40px 20px;
+      }
+      .auth-card {
+        width: min(100%, 460px);
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        box-shadow: 0 12px 35px rgba(11, 59, 120, 0.08);
+        padding: 32px 28px;
+      }
+      .auth-header {
+        text-align: center;
+        margin-bottom: 28px;
+      }
+      .brand-mark {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 14px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #0b3b78, #1765b5);
+        color: white;
+        display: grid;
+        place-items: center;
+        font-size: 24px;
+        font-weight: 900;
+      }
+      .auth-header h1 {
+        font-size: clamp(1.8rem, 3vw, 2.4rem);
+        margin-bottom: 8px;
+      }
+      .auth-header p {
+        color: #64748b;
+      }
+      .form-group {
+        margin-bottom: 18px;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 13px 14px;
+        border: 1px solid #d7e1ee;
+        border-radius: 10px;
+        background: #fff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      input:focus,
+      select:focus {
+        border-color: #1765b5;
+        box-shadow: 0 0 0 4px rgba(23, 101, 181, 0.1);
+        outline: none;
+      }
+      .btn {
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        background: #0b3b78;
+        color: white;
+        padding: 13px 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s ease, background 0.2s ease;
+      }
+      .btn:hover {
+        background: #1765b5;
+        transform: translateY(-1px);
+      }
+      .btn:disabled {
+        opacity: 0.7;
+        cursor: wait;
+      }
+      .package-banner {
+        display: none;
+        margin-bottom: 18px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: #eef6ff;
+        border: 1px solid #bfdaf8;
+        color: #0b3b78;
+        font-weight: 700;
+      }
+      .package-banner.visible {
+        display: block;
+      }
+      .remember-row {
+        margin-top: -4px;
+      }
+      .remember-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        color: #334155;
+        font-weight: 600;
+      }
+      .remember-label input {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+      }
+      .alt-link {
+        margin-top: 18px;
+        text-align: center;
+        color: #475569;
+      }
+      .alt-link a {
+        color: #0b3b78;
+        font-weight: 700;
+      }
+      .message {
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        display: none;
+      }
+      .message.error {
+        display: block;
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        color: #9f1239;
+      }
+      .message.success {
+        display: block;
+        background: #ecfdf5;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+      }
+      .login-options {
+        display: grid;
+        gap: 12px;
+      }
+      .login-option {
+        display: block;
+        width: 100%;
+        border: 1px solid #d7e1ee;
+        border-radius: 12px;
+        background: #fff;
+        color: #0b3b78;
+        padding: 16px;
+        text-decoration: none;
+        text-align: left;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .login-option:hover,
+      .login-option:focus-visible {
+        border-color: #1765b5;
+        background: #f5f9ff;
+      }
+      .login-option span {
+        display: block;
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 0.88rem;
+        font-weight: 400;
+      }
+      .back-button {
+        margin: 0 0 18px;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: #0b3b78;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .login-form[hidden],
+      .login-options[hidden] {
+        display: none;
+      }
+      @media (max-width: 480px) {
+        .auth-card {
+          padding: 24px 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-shell">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="brand-mark">G</div>
+          <h1 id="authTitle">Welcome</h1>
+          <p id="authSubtitle">Choose how you would like to continue</p>
+        </div>
+
+        <div id="packageBanner" class="package-banner" aria-live="polite"></div>
+        <div id="messageBox" class="message" role="alert"></div>
+
+        <div id="loginOptions" class="login-options">
+          <button class="login-option" type="button" data-login-mode="user">
+            Log in as a user
+            <span>Access your account and business activity.</span>
+          </button>
+          <button class="login-option" type="button" data-login-mode="admin">
+            Log in as Admin
+            <span>Sign in with an administrator account created by the Super Admin.</span>
+          </button>
+          <button class="login-option" type="button" data-login-mode="super_admin">
+            Log in as Super Admin
+            <span>Sign in with the Super Admin password configured for this site.</span>
+          </button>
+          <a class="login-option" href="../dashboard.html?demo=super-admin">
+            Preview Super Admin dashboard
+            <span>Open the read-only sample preview without signing in. No real admin access.</span>
+          </a>
+          <a class="btn" href="register.html">Sign up</a>
+        </div>
+
+        <form id="loginForm" class="login-form" hidden novalidate>
+          <button id="backToOptions" class="back-button" type="button">← Back to options</button>
+          <h2 id="loginModeTitle">Log in</h2>
+          <div class="form-group">
+            <label for="loginEmail">Email address</label>
+            <input id="loginEmail" name="email" type="email" placeholder="you@example.com" autocomplete="username" required />
+          </div>
+
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+          </div>
+
+          <div class="form-group remember-row">
+            <label for="rememberMe" class="remember-label">
+              <input id="rememberMe" name="remember" type="checkbox" />
+              <span>Keep me signed in on this device</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn" id="loginSubmitBtn">Log In</button>
+          <div class="alt-link">Need an account? <a href="register.html">Sign up</a></div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:3000/api";
+
+      function setMessage(text, type = "error") {
+        const box = document.getElementById("messageBox");
+        box.textContent = text;
+        box.className = `message ${type}`;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const registered = params.get("registered");
+        const selectedPackage = params.get("package");
+        const packageBanner = document.getElementById("packageBanner");
+
+        if (selectedPackage) {
+          const packageLabelMap = {
+            standard: "Standard Package",
+            featured: "Featured Package",
+            banner: "Premium Banner Package"
+          };
+          const packageName = packageLabelMap[selectedPackage] || "selected package";
+          packageBanner.textContent = `You selected: ${packageName}. Please log in to confirm your mobile number for subscription.`;
+          packageBanner.classList.add("visible");
+        }
+
+        if (registered === "1") {
+          setMessage("Account created successfully. Please log in.", "success");
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        const form = document.getElementById("loginForm");
+        const options = document.getElementById("loginOptions");
+        const submitButton = document.getElementById("loginSubmitBtn");
+        const rememberMe = document.getElementById("rememberMe");
+        const passwordInput = document.getElementById("loginPassword");
+        const passwordGroup = passwordInput.closest(".form-group");
+        const emailGroup = document.getElementById("loginEmail").closest(".form-group");
+        const rememberGroup = rememberMe.closest(".form-group");
+        let loginMode = "";
+
+        document.querySelectorAll("[data-login-mode]").forEach(button => {
+          button.addEventListener("click", () => {
+            loginMode = button.dataset.loginMode;
+            options.hidden = true;
+            form.hidden = false;
+            document.getElementById("authTitle").textContent =
+              loginMode === "super_admin" ? "Super Admin Login" :
+                loginMode === "admin" ? "Admin Login" : "User Login";
+            document.getElementById("authSubtitle").textContent =
+              loginMode === "super_admin"
+                ? "Enter the configured Super Admin email and password."
+                : loginMode === "admin"
+                  ? "Enter your administrator account email and password."
+                : "Enter your email and password to continue.";
+            document.getElementById("loginModeTitle").textContent =
+              loginMode === "super_admin" ? "Super Admin sign in" :
+                loginMode === "admin" ? "Administrator sign in" : "Sign in to your account";
+            submitButton.textContent =
+              loginMode === "super_admin" ? "Log In as Super Admin" :
+                loginMode === "admin" ? "Log In as Admin" : "Log In";
+            emailGroup.hidden = false;
+            document.getElementById("loginEmail").required = true;
+            passwordInput.autocomplete = "current-password";
+            passwordInput.placeholder = "Enter your password";
+            passwordInput.value = "";
+            passwordGroup.hidden = false;
+            passwordInput.required = true;
+            rememberGroup.hidden = false;
+            setMessage("");
+            document.getElementById("loginEmail").focus();
+          });
+        });
+
+        document.getElementById("backToOptions").addEventListener("click", () => {
+          loginMode = "";
+          form.hidden = true;
+          options.hidden = false;
+          emailGroup.hidden = false;
+          document.getElementById("loginEmail").required = true;
+          passwordInput.autocomplete = "current-password";
+          passwordInput.placeholder = "Enter your password";
+          passwordGroup.hidden = false;
+          passwordInput.required = true;
+          rememberGroup.hidden = false;
+          document.getElementById("authTitle").textContent = "Welcome";
+          document.getElementById("authSubtitle").textContent = "Choose how you would like to continue";
+          setMessage("");
+        });
+
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const email = document.getElementById("loginEmail").value.trim();
+          const password = passwordInput.value;
+
+          if (!email) {
+            setMessage("Please enter your email address.", "error");
+            return;
+          }
+
+          submitButton.disabled = true;
+          submitButton.textContent = "Logging in...";
+          setMessage("");
+
+          try {
+            if (!password) {
+              throw new Error("Please enter your password.");
+            }
+
+            const response = await fetch(`${API_URL}/auth/login`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ email, password })
+            });
+
+            const result = await response.json().catch(() => ({ message: "Invalid server response." }));
+
+            if (!response.ok) {
+              throw new Error(result.message || "Login failed.");
+            }
+
+            if (loginMode === "super_admin" && result.user?.role !== "super_admin") {
+              throw new Error("This account does not have Super Admin access.");
+            }
+            if (loginMode === "admin" && result.user?.role !== "admin") {
+              throw new Error("This account does not have Admin access.");
+            }
+            if (loginMode === "user" && ["admin", "super_admin"].includes(result.user?.role)) {
+              throw new Error("Please choose the matching administrator login option for this account.");
+            }
+            await completeLogin(result);
+          } catch (error) {
+            setMessage(error.message || "Unable to log in. Please try again.", "error");
+          } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = loginMode === "super_admin" ? "Log In as Super Admin" :
+              loginMode === "admin" ? "Log In as Admin" : "Log In";
+          }
+        });
+
+        async function completeLogin(result) {
+          const { token, user } = result;
+          if (!token || !user) {
+            throw new Error("Authentication response was incomplete.");
+          }
+
+          if (loginMode === "super_admin" && user.role !== "super_admin") {
+            throw new Error("This account does not have Super Admin access.");
+          }
+          if (loginMode === "admin" && user.role !== "admin") {
+            throw new Error("This account does not have Admin access.");
+          }
+
+          if (window.GNK && typeof window.GNK.saveSession === "function") {
+            window.GNK.saveSession(token, user, rememberMe.checked);
+          } else {
+            sessionStorage.setItem("gnk_token", token);
+            sessionStorage.setItem("gnk_user", JSON.stringify(user));
+
+            if (rememberMe.checked) {
+              localStorage.setItem("gnk_token", token);
+              localStorage.setItem("gnk_user", JSON.stringify(user));
+              const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
+              document.cookie = `gnk_token=${encodeURIComponent(token)}; expires=${expires}; path=/; SameSite=Lax`;
+              document.cookie = `gnk_user=${encodeURIComponent(JSON.stringify(user))}; expires=${expires}; path=/; SameSite=Lax`;
+            } else {
+              localStorage.removeItem("gnk_token");
+              localStorage.removeItem("gnk_user");
+              document.cookie = "gnk_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax";
+              document.cookie = "gnk_user=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax";
+            }
+          }
+
+          const nextPackage = new URLSearchParams(window.location.search).get("package");
+          if (nextPackage) {
+            const phone = user.phone || "";
+            const formattedPhone = phone && /^(?:\+254|254|0)7\d{8}$/.test(phone) ? phone : "";
+            const confirmation = formattedPhone
+              ? `Your registered mobile number is ${formattedPhone}. We will use it for your ${nextPackage} subscription.`
+              : "Please update your mobile number in your profile so we can contact you for this subscription.";
+
+            window.location.href = `../dashboard.html?package=${encodeURIComponent(nextPackage)}&phone=${encodeURIComponent(formattedPhone)}&message=${encodeURIComponent(confirmation)}`;
+            return;
+          }
+
+          window.location.href = "../dashboard.html";
+        }
+      });
+    </script>
+  </body>
+</html>

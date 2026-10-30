@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Property Advertisements | Global Network Kenya</title>
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      :root {
+        --gnk-blue: #0b3b78;
+        --gnk-blue-strong: #082a5d;
+        --gnk-soft: #edf4ff;
+        --gnk-border: #dfeaf8;
+        --gnk-text: #172b4d;
+        --gnk-muted: #667085;
+        --gnk-card: #ffffff;
+        --gnk-accent: #f4a623;
+        --gnk-shadow: 0 14px 28px rgba(11, 59, 120, 0.08);
+        --gnk-success: #067647;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: #f5f8fc;
+        color: var(--gnk-text);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      a { color: inherit; text-decoration: none; }
+
+      .page-shell {
+        width: min(1200px, 92%);
+        margin: 32px auto 64px;
+      }
+
+      .topbar {
+        background: #ffffff;
+        border-bottom: 1px solid var(--gnk-border);
+      }
+
+      .topbar-inner {
+        width: min(1200px, 92%);
+        margin: 0 auto;
+        min-height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        font-weight: 900;
+        font-size: 1.1rem;
+        color: var(--gnk-blue);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+
+      .nav-links a {
+        color: #334155;
+        font-weight: 700;
+        font-size: 0.94rem;
+      }
+
+      .nav-links a:hover { color: var(--gnk-blue); }
+
+      .hero-card {
+        background: linear-gradient(135deg, #0b3b78, #1758b7 60%, #4585d5);
+        color: white;
+        border-radius: 22px;
+        padding: 30px 28px;
+        box-shadow: var(--gnk-shadow);
+      }
+
+      .hero-card h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 4vw, 3rem);
+      }
+
+      .hero-card p {
+        margin: 0;
+        max-width: 820px;
+        opacity: 0.92;
+        line-height: 1.7;
+      }
+
+      .price-strip {
+        margin-top: 22px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 999px;
+        padding: 9px 16px;
+        font-weight: 700;
+      }
+
+      .property-grid {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+      }
+
+      .property-card {
+        background: var(--gnk-card);
+        border: 1px solid var(--gnk-border);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+      }
+
+      .property-card img {
+        display: block;
+        width: 100%;
+        height: 260px;
+        object-fit: cover;
+      }
+
+      .property-body {
+        padding: 20px 20px 18px;
+      }
+
+      .property-body h2 {
+        margin: 0 0 10px;
+        font-size: 1.5rem;
+      }
+
+      .price {
+        display: inline-block;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--gnk-soft);
+        color: var(--gnk-blue);
+        font-weight: 900;
+      }
+
+      .meta {
+        color: var(--gnk-muted);
+        margin: 0 0 14px;
+        line-height: 1.7;
+      }
+
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .link-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--gnk-border);
+        font-weight: 700;
+        background: white;
+        color: var(--gnk-blue);
+      }
+
+      .section-label {
+        margin-top: 28px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--gnk-blue);
+      }
+
+      .map-panel {
+        margin-top: 28px;
+        background: #ffffff;
+        border: 1px solid var(--gnk-border);
+        border-radius: 20px;
+        padding: 24px 20px;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+      }
+
+      .map-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin: 18px 0 16px;
+      }
+
+      .rating-box {
+        background: #f8fbff;
+        border: 1px solid var(--gnk-border);
+        border-radius: 12px;
+        padding: 18px 16px;
+        text-align: center;
+        font-weight: 800;
+        color: var(--gnk-blue);
+      }
+
+      .map-placeholder {
+        min-height: 180px;
+        background: linear-gradient(135deg, #eaf3ff, #dfeaf8);
+        border: 1px dashed #bfd5ee;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        color: var(--gnk-muted);
+        font-weight: 700;
+      }
+
+      .call-box {
+        margin-top: 26px;
+        background: linear-gradient(135deg, #0b3b78, #1758b7);
+        color: white;
+        border-radius: 18px;
+        padding: 24px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+
+      .call-box h3 {
+        margin: 0 0 6px;
+        font-size: clamp(1.3rem, 2vw, 2rem);
+      }
+
+      .call-box p {
+        margin: 0;
+        opacity: 0.92;
+      }
+
+      .phone-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        padding: 0 20px;
+        border-radius: 12px;
+        background: var(--gnk-accent);
+        color: #1c2b40;
+        font-weight: 900;
+        font-size: 1.05rem;
+      }
+
+      .hire-float {
+        position: fixed;
+        right: 22px;
+        bottom: 24px;
+        z-index: 20;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #f4a623, #f7c863);
+        color: #1b2a3f;
+        font-weight: 900;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        box-shadow: 0 18px 30px rgba(244, 166, 35, 0.32);
+        animation: float-contact 2.2s ease-in-out infinite;
+      }
+
+      @keyframes float-contact {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+
+      .hire-float strong {
+        font-size: 14px;
+        letter-spacing: 0.06em;
+      }
+
+      @media (max-width: 900px) {
+        .property-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .map-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="../index.html" class="brand">GLOBAL NETWORK KENYA</a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="../index.html">Home</a>
+          <a href="businesses.html">Businesses</a>
+          <a href="../index.html#categories">Categories</a>
+          <a href="packages.html">Packages</a>
+          <a href="login.html">Log in</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="hero-card">
+        <h1>Featured property adverts</h1>
+        <p>
+          The listings were found on Kenya Property Centre and checked on 30 October 2026. The advertised
+          prices range from KES 55 million to KES 135 million. Availability should be confirmed with each estate agent.
+        </p>
+        <div class="price-strip">Kenya Property Centre (KPC)+3</div>
+      </section>
+
+      <div class="section-label">## 1. Property photographs and image links</div>
+
+      <div class="section-label" style="margin-top: 16px; font-size: 1.1rem; color: var(--gnk-text);">## Image links used</div>
+      <p class="meta" style="margin-top: 12px; margin-bottom: 18px;">
+        These are direct image URLs and pages where you can view additional photos.
+      </p>
+
+      <section class="property-grid" aria-label="Property adverts">
+        <article class="property-card">
+          <img src="https://images.openai.com/static-rsc-4/pBVdu2ictPhHqYRvK-0ZLEZUO-s65QXDx3pOWprgpQ1GLZQoUfM0sICKmChv2MQyFkz0BnLDoCd71tOpkKOAFf4WTxabfb8STutxVOQh_5Q2ElIIPujPgCL8p7muOZpuTiFDxokcqJaucsq0G9ZVdx9Zxs_goZ-RDzY352ORBx4?purpose=inline" alt="4-bedroom rooftop bungalow" />
+          <div class="property-body">
+            <h2>4-bedroom rooftop bungalow</h2>
+            <div class="price">KES 55M</div>
+            <p class="meta">Kiambu Road, Runda</p>
+            <div class="links">
+              <a class="link-btn" href="https://images.kenyapropertycentre.com/properties/images/thumbs/69156/06ac589a731a66-4-bedroom-detached-bungalow-with-rooftop-terrace-detached-bungalows-for-sale-runda-westlands-nairobi.webp?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Open original image</a>
+              <a class="link-btn" href="https://kenyapropertycentre.com/for-sale/houses/detached-bungalows/nairobi/westlands/runda/69156-4-bedroom-detached-bungalow-with-rooftop-terrace?utm_source=chatgpt.com" target="_blank" rel="noreferrer">View listing</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="property-card">
+          <img src="https://images.openai.com/static-rsc-4/kupoc0mrq_OiWpxlssAYbWRymQCGns9z8EaqPbVivusxcf2Gt8glpEVtYLtZuxgQ_x25pPyozXlb8lnMWopqsJB-deR-LjjI0aKEomxKM218JdIx20OPRxoRv6TlylXcDgYT-sQQQG80AidPGEsRiqDOy9uJ6EFFvTp_HJsHTwk?purpose=inline" alt="4-bedroom executive villa" />
+          <div class="property-body">
+            <h2>4-bedroom executive villa</h2>
+            <div class="price">KES 65M</div>
+            <p class="meta">Runda Paradise, Kiambu Road</p>
+            <div class="links">
+              <a class="link-btn" href="https://images.kenyapropertycentre.com/properties/images/thumbs/68968/06abe43e77f88e-4-bedroom-villa-with-en-suite-bedrooms-detached-bungalows-for-sale-runda-westlands-nairobi.webp?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Open original image</a>
+              <a class="link-btn" href="https://kenyapropertycentre.com/for-sale/houses/detached-bungalows/serviced/nairobi/westlands/runda/showtype?utm_source=chatgpt.com" target="_blank" rel="noreferrer">View listing</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="property-card">
+          <img src="https://images.openai.com/static-rsc-4/eKG4y6ftZ_ALPX2K9fBG8WDQwreQPaphlZt_KpFFCYbeqVQ4RQVdAYcXBT-600RRnDMxnNLr8mNV_ry8KqT8XBs_IpXakjWJKJA3DSLlhgrlGWRAfZbvtn4_Tw6IcyE5SeUDfKy4X-FtVY0udMJvADmfZnOE_TWSdjaG1PuV1mM?purpose=inline" alt="4-bedroom home with DSQ" />
+          <div class="property-body">
+            <h2>4-bedroom home with DSQ</h2>
+            <div class="price">KES 77M</div>
+            <p class="meta">New Runda</p>
+            <div class="links">
+              <a class="link-btn" href="https://images.kenyapropertycentre.com/properties/images/thumbs/67379/06a9a692d6ab92-4-bedroom-house-with-servant-quarter-detached-bungalows-for-sale-runda-westlands-nairobi.webp?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Open original image</a>
+              <a class="link-btn" href="https://kenyapropertycentre.com/for-sale/unfurnished/houses/detached-bungalows/nairobi/westlands/runda/showtype?bedrooms=4&utm_source=chatgpt.com" target="_blank" rel="noreferrer">View listing details</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="property-card">
+          <img src="https://images.openai.com/static-rsc-4/OYdAEtG2VVHzSdvMTtqETi0D0T901sIomKPMHaiZU5Fy3wAZ3fsjqROZXxVQwDVOyTwG1_uCWSKXXP4zY8ukclq6L4iCalSMEL1GWNDHQYTu8xB8LGHq1jONOILiOxjOUj4To5lavkBALCb5yHUbYavZicVLILZQ3m8CAq1wUW4?purpose=inline" alt="Premium 4-bedroom bungalow" />
+          <div class="property-body">
+            <h2>Premium 4-bedroom bungalow</h2>
+            <div class="price">KES 135M</div>
+            <p class="meta">Runda, gated community</p>
+            <div class="links">
+              <a class="link-btn" href="https://images.kenyapropertycentre.com/properties/images/thumbs/67236/06a979201cd100-4-bedroom-detached-bungalow-with-dsq-detached-bungalows-for-sale-runda-westlands-nairobi.webp?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Open original image</a>
+              <a class="link-btn" href="https://kenyapropertycentre.com/for-sale/unfurnished/houses/detached-bungalows/nairobi/westlands/runda/showtype?bedrooms=4&utm_source=chatgpt.com" target="_blank" rel="noreferrer">View listing details</a>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <div class="section-label" style="margin-top: 18px;">## 2. Makini School images and direct links</div>
+
+      <section class="property-grid" aria-label="Makini School images" style="margin-top: 18px;">
+        <article class="property-card">
+          <img src="https://irp.cdn-website.com/a52d3c80/dms3rep/multi/opt/CGI06788%2B%281%29-1920w.jpg?utm_source=chatgpt.com" alt="Makini School campus exterior" />
+          <div class="property-body">
+            <h2>School campus exterior</h2>
+            <div class="links">
+              <a class="link-btn" href="https://irp.cdn-website.com/a52d3c80/dms3rep/multi/opt/CGI06788%2B%281%29-1920w.jpg?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Open original image</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="property-card">
+          <img src="https://irp.cdn-website.com/a52d3c80/dms3rep/multi/opt/CGI05339-d2463191-1920w.jpg?utm_source=chatgpt.com" alt="Makini School library" />
+          <div class="property-body">
+            <h2>School library</h2>
+            <div class="links">
+              <a class="link-btn" href="https://irp.cdn-website.com/a52d3c80/dms3rep/multi/opt/CGI05339-d2463191-1920w.jpg?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Open original image</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="property-card">
+          <img src="https://irp.cdn-website.com/a52d3c80/dms3rep/multi/opt/CGI04948-89ed7160-1920w.jpg?utm_source=chatgpt.com" alt="Makini School science laboratory" />
+          <div class="property-body">
+            <h2>Science laboratory</h2>
+            <div class="links">
+              <a class="link-btn" href="https://irp.cdn-website.com/a52d3c80/dms3rep/multi/opt/CGI04948-89ed7160-1920w.jpg?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Open original image</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="property-card">
+          <img src="https://irp.cdn-website.com/a52d3c80/dms3rep/multi/opt/CGI05218-7e910c10-1920w.jpg?utm_source=chatgpt.com" alt="Makini School playground" />
+          <div class="property-body">
+            <h2>School playground</h2>
+            <div class="links">
+              <a class="link-btn" href="https://irp.cdn-website.com/a52d3c80/dms3rep/multi/opt/CGI05218-7e910c10-1920w.jpg?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Open original image</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="property-card" style="grid-column: 1 / -1; max-width: 520px; margin: 0 auto;">
+          <img src="https://irp.cdn-website.com/a52d3c80/dms3rep/multi/opt/CGI05537-1eecf7af-1920w.jpg?utm_source=chatgpt.com" alt="Makini School swimming pool" />
+          <div class="property-body">
+            <h2>Swimming pool</h2>
+            <div class="links">
+              <a class="link-btn" href="https://irp.cdn-website.com/a52d3c80/dms3rep/multi/opt/CGI05537-1eecf7af-1920w.jpg?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Open original image</a>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <div class="section-label" style="margin-top: 26px;">## 3. Official Makini links</div>
+      <div class="property-body" style="padding: 0; margin-top: 18px;">
+        <div class="links" style="margin-top: 0; flex-direction: column; align-items: flex-start;">
+          <a class="link-btn" href="https://www.makinischool.ac.ke/?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Makini School official website</a>
+          <a class="link-btn" href="https://www.makinischool.ac.ke/makini-school-cambridge-runda?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Makini Cambridge Runda campus</a>
+          <a class="link-btn" href="https://www.google.com/maps/search/?api=1&query=Makini+School+Runda+Nairobi&utm_source=chatgpt.com" target="_blank" rel="noreferrer">Makini School location</a>
+        </div>
+      </div>
+
+      <section class="map-panel" aria-label="Image link references" style="margin-top: 30px;">
+        <div class="section-label" style="margin-top: 0; color: var(--gnk-text);">## Image links used</div>
+
+        <div class="property-body" style="padding: 0; margin-top: 18px;">
+          <p class="meta">
+            [2020 Rolls-Royce Cullinan | $349,995 | 37,000 km | Gas SUV for sale by Auto Devenzo | St-Eustache, QC](https://images.openai.com/static-rsc-4/nVvUjejtVgN6BX1UaKDsrcTVNamL6RTSRLCwRF-iJkt9ERPpPQp2ZWYbiesocDzHsQTW0uBwWo7D6yjwmhfs2EhFZ7o-nz3-4Oc0e9eGW8e1eBct67keVPewUbiKv6oWn0M4oCxQ5ka3NTWCvCgMP0kXTAO2bvevrOtrRdaXRqc?purpose=inline)
+          </p>
+          <h2 style="font-size: 1.2rem; margin: 12px 0 8px;">Rolls-Royce Cullinan</h2>
+          <div class="links" style="margin-top: 8px;">
+            <a class="link-btn" href="https://www.nizoluxury.com/images/black-rolls-royce-cullinan-in-los-angeles.jpg?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Direct image link</a>
+            <a class="link-btn" href="https://www.nizoluxury.com/photos/black-rolls-royce-cullinan/?utm_source=chatgpt.com" target="_blank" rel="noreferrer">View photo collection</a>
+          </div>
+
+          <p class="meta" style="margin-top: 22px;">
+            [G63 AMG 4x4² Manufaktur / Carbon / Massage / Pano](https://images.openai.com/static-rsc-4/PxICud4goljFoxcnCjgRziLM-pv-bgnVo0D4cKv-F92iYcAmb7AZATuitT3dL0qJX6BWDi1GRzzlx-2FEYAvf8__yzLYBIojXBohjzsOHE3_O9Tl2B82r7DofiQ6w3qjjvcS5JXFYo0Fk57OMZJgyo5N8eDdmL51g9rgW6TZSeM?purpose=inline)
+          </p>
+          <h2 style="font-size: 1.2rem; margin: 12px 0 8px;">Mercedes-AMG G 63</h2>
+          <div class="links" style="margin-top: 8px;">
+            <a class="link-btn" href="https://www.nizoluxury.com/images/black-mercedes-amg-g-63-in-los-angeles.jpg?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Direct image link</a>
+            <a class="link-btn" href="https://www.nizoluxury.com/photos/black-mercedes-amg-g-63/?utm_source=chatgpt.com" target="_blank" rel="noreferrer">View photo collection</a>
+          </div>
+
+          <p class="meta" style="margin-top: 22px;">
+            [Bentley Bentayga 4.0 V8 – Next Exclusives](https://images.openai.com/static-rsc-4/0kN2QRinPWMn0V9CHr_8hvd5svY7IerjFGCQXHC-77bSD63Ddrf3LvTHtNUcv4pP6GMv5SHcAQm6FvSPyUWMLghonm5uwjdVRinaqjQHMz5pEAFgsNbfqGjtTW1m5rg1ISoAxy-G-n_TxZufq_i78U9pM9dgF7Yhaz6PWd-EU58?purpose=inline)
+          </p>
+          <h2 style="font-size: 1.2rem; margin: 12px 0 8px;">Bentley Bentayga</h2>
+          <div class="links" style="margin-top: 8px;">
+            <a class="link-btn" href="https://www.nizoluxury.com/images/black-bentley-bentayga-in-los-angeles.jpg?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Direct image link</a>
+            <a class="link-btn" href="https://www.nizoluxury.com/photos/black-bentley-bentayga/?utm_source=chatgpt.com" target="_blank" rel="noreferrer">View photo collection</a>
+          </div>
+
+          <p class="meta" style="margin-top: 22px;">
+            [استأجر لامبورغيني أوروس الخضراء في دبي - رفاهية - أوكتان رينت دبي](https://images.openai.com/static-rsc-4/YiwHA93Mm3RQwAIFW-920W_4FBrszSGeXLJV-yf1rWUk356xdbYXg6ZtkihzSBlnw5-0mSK2eP9TloL9nNV7HRfWyfwELTkj8mNDcN-RLz6iKhouYT0ykR78ieBJ0GB9Ew4xMp-_9WbZXtWPvj4vBhIw-8hnILT7zor-U7FuY_c?purpose=inline)
+          </p>
+          <h2 style="font-size: 1.2rem; margin: 12px 0 8px;">Lamborghini Urus</h2>
+          <div class="links" style="margin-top: 8px;">
+            <a class="link-btn" href="https://www.nizoluxury.com/images/green-lamborghini-urus-in-los-angeles.jpg?utm_source=chatgpt.com" target="_blank" rel="noreferrer">Direct image link</a>
+            <a class="link-btn" href="https://www.nizoluxury.com/photos/green-lamborghini-urus/?utm_source=chatgpt.com" target="_blank" rel="noreferrer">View photo collection</a>
+          </div>
+
+          <p class="meta" style="margin-top: 22px;">
+            The images come from Nizo Luxury's free photo collection, which allows commercial use under CC BY 4.0
+          </p>
+        </div>
+      </section>
+
+      <section class="call-box" aria-label="Contact for more information">
+        <div>
+          <h3>Need more information?</h3>
+          <p>Availability should be confirmed with each estate agent before making a commitment.</p>
+        </div>
+        <a class="phone-btn" href="tel:0118237749">Call 0118237749</a>
+      </section>
+    </main>
+
+    <a class="hire-float" href="tel:0118237749" aria-label="Contact me by calling 0118237749">
+      <span>Contact Me</span>
+      <strong>0118237749</strong>
+    </a>
+  </body>
+</html>

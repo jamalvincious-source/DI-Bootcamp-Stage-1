@@ -1,0 +1,921 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Business | Global Network Kenya</title>
+    <meta name="description"
+          content="Register and manage your business with Global Network Kenya.">
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        :root {
+            --blue: #155eef;
+            --dark-blue: #1045b8;
+            --dark: #172b4d;
+            --muted: #667085;
+            --border: #e1e7ef;
+            --background: #f5f8fc;
+            --white: #ffffff;
+            --green: #067647;
+            --orange: #b54708;
+            --red: #b42318;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--background);
+            color: var(--dark);
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.6;
+        }
+
+        a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+
+        .navbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            width: min(1150px, 92%);
+            margin: auto;
+            min-height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--blue);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--dark);
+            font-size: .93rem;
+            font-weight: 600;
+        }
+
+        .nav-links a:hover {
+            color: var(--blue);
+        }
+
+        .container {
+            width: min(1150px, 92%);
+            margin: 35px auto;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading h1 {
+            margin: 0 0 8px;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            line-height: 1.2;
+        }
+
+        .page-heading p {
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .panel {
+            background: var(--white);
+            padding: 25px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 5px 18px rgba(16, 42, 80, .04);
+        }
+
+        .panel h2 {
+            margin: 0 0 6px;
+            font-size: 1.35rem;
+        }
+
+        .panel-intro {
+            color: var(--muted);
+            font-size: .93rem;
+            margin: 0 0 22px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 700;
+            font-size: .92rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            border-radius: 8px;
+            font: inherit;
+            color: var(--dark);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: 3px solid rgba(21, 94, 239, .14);
+            border-color: var(--blue);
+        }
+
+        .form-help {
+            display: block;
+            color: var(--muted);
+            font-size: .8rem;
+            margin-top: 5px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            background: var(--blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: var(--dark-blue);
+        }
+
+        .btn:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #eaf1ff;
+            color: var(--blue);
+        }
+
+        .btn-secondary:hover {
+            background: #d8e5ff;
+            color: var(--dark-blue);
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        .message {
+            display: none;
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .message.visible {
+            display: block;
+        }
+
+        .message.success {
+            background: #ecfdf3;
+            border-color: #abefc6;
+            color: var(--green);
+        }
+
+        .message.error {
+            background: #fef3f2;
+            border-color: #fecdca;
+            color: var(--red);
+        }
+
+        .message.info {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+        }
+
+        .business-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .business-card {
+            min-width: 0;
+            padding: 17px;
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            background: #fff;
+        }
+
+        .business-card h3 {
+            margin: 0 0 7px;
+            font-size: 1.08rem;
+            overflow-wrap: anywhere;
+        }
+
+        .business-card p {
+            margin: 5px 0;
+            font-size: .91rem;
+            color: var(--muted);
+            overflow-wrap: anywhere;
+        }
+
+        .business-image {
+            display: block;
+            width: 100%;
+            max-height: 190px;
+            margin-bottom: 12px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: .78rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .status.pending {
+            background: #fffaeb;
+            color: var(--orange);
+        }
+
+        .status.published {
+            background: #ecfdf3;
+            color: var(--green);
+        }
+
+        .status.rejected {
+            background: #fef3f2;
+            color: var(--red);
+        }
+
+        .empty-state,
+        .loading-state {
+            text-align: center;
+            padding: 27px 12px;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            color: var(--muted);
+        }
+
+        .footer {
+            padding: 25px 4%;
+            color: var(--muted);
+            text-align: center;
+            font-size: .88rem;
+        }
+
+        @media (max-width: 800px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-inner {
+                padding: 15px 0;
+            }
+
+            .nav-links {
+                gap: 12px;
+            }
+
+            .panel {
+                padding: 19px;
+            }
+
+            .container {
+                margin-top: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+    <nav class="nav-inner" aria-label="Main navigation">
+        <a class="logo" href="../index.html">
+            Global Network Kenya
+        </a>
+
+        <div class="nav-links">
+            <a href="../index.html">Home</a>
+            <a href="businesses.html">Businesses</a>
+            <a href="packages.html">Packages</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="#" id="logoutButton">Log out</a>
+        </div>
+    </nav>
+</header>
+
+<main class="container">
+    <section class="page-heading">        <h1>Manage Your Business</h1>
+        <p>
+            Add your business to our directory and help customers
+            discover your products and services across Kenya.
+        </p>
+    </section>
+
+    <div id="pageMessage" class="message" role="status"
+         aria-live="polite"></div>
+
+    <div class="grid">
+
+        <!-- REGISTER BUSINESS -->
+        <section class="panel">
+            <h2>Register a Business</h2>
+
+            <p class="panel-intro">
+                Enter accurate business details. New submissions
+                may require administrator approval.
+            </p>
+
+            <form id="businessForm">
+                <div class="form-group">
+                    <label for="name">Business name *</label>
+                    <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        minlength="2"
+                        maxlength="160"
+                        autocomplete="organization"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select a category</option>
+                        <option value="Agriculture">Agriculture</option>
+                        <option value="Beauty">Beauty</option>
+                        <option value="Construction">Construction</option>
+                        <option value="Education">Education</option>
+                        <option value="Food">Food and Restaurants</option>
+                        <option value="Health">Health</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Retail">Retail and Shopping</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Tourism">Tourism and Hospitality</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="county">County *</label>
+                    <select id="county" name="county" required>
+                        <option value="">Select a county</option>
+                        <option value="Baringo">Baringo</option>
+                        <option value="Bomet">Bomet</option>
+                        <option value="Bungoma">Bungoma</option>
+                        <option value="Busia">Busia</option>
+                        <option value="Elgeyo-Marakwet">Elgeyo-Marakwet</option>
+                        <option value="Embu">Embu</option>
+                        <option value="Garissa">Garissa</option>
+                        <option value="Homa Bay">Homa Bay</option>
+                        <option value="Isiolo">Isiolo</option>
+                        <option value="Kajiado">Kajiado</option>
+                        <option value="Kakamega">Kakamega</option>
+                        <option value="Kericho">Kericho</option>
+                        <option value="Kiambu">Kiambu</option>
+                        <option value="Kilifi">Kilifi</option>
+                        <option value="Kirinyaga">Kirinyaga</option>
+                        <option value="Kisii">Kisii</option>
+                        <option value="Kisumu">Kisumu</option>
+                        <option value="Kitui">Kitui</option>
+                        <option value="Kwale">Kwale</option>
+                        <option value="Laikipia">Laikipia</option>
+                        <option value="Lamu">Lamu</option>
+                        <option value="Machakos">Machakos</option>
+                        <option value="Makueni">Makueni</option>
+                        <option value="Mandera">Mandera</option>
+                        <option value="Marsabit">Marsabit</option>
+                        <option value="Meru">Meru</option>
+                        <option value="Migori">Migori</option>
+                        <option value="Mombasa">Mombasa</option>
+                        <option value="Murang'a">Murang'a</option>
+                        <option value="Nairobi">Nairobi</option>
+                        <option value="Nakuru">Nakuru</option>
+                        <option value="Nandi">Nandi</option>
+                        <option value="Narok">Narok</option>
+                        <option value="Nyamira">Nyamira</option>
+                        <option value="Nyandarua">Nyandarua</option>
+                        <option value="Nyeri">Nyeri</option>
+                        <option value="Samburu">Samburu</option>
+                        <option value="Siaya">Siaya</option>
+                        <option value="Taita-Taveta">Taita-Taveta</option>
+                        <option value="Tana River">Tana River</option>
+                        <option value="Tharaka-Nithi">Tharaka-Nithi</option>
+                        <option value="Trans Nzoia">Trans Nzoia</option>
+                        <option value="Turkana">Turkana</option>
+                        <option value="Uasin Gishu">Uasin Gishu</option>
+                        <option value="Vihiga">Vihiga</option>
+                        <option value="Wajir">Wajir</option>
+                        <option value="West Pokot">West Pokot</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Business phone</label>
+                    <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        maxlength="30"
+                        autocomplete="tel"
+                        placeholder="e.g. 0712345678"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        maxlength="3000"
+                        required
+                        placeholder="Describe your business, products and services..."
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="image_url">Business image URL</label>
+                    <input
+                        id="image_url"
+                        name="image_url"
+                        type="url"
+                        maxlength="2048"
+                        placeholder="https://example.com/image.jpg"
+                    >
+                    <span class="form-help">
+                        Optional. Enter an image address beginning with
+                        http:// or https://.
+                    </span>
+                </div>
+
+                <button class="btn full-width" id="submitButton" type="submit">
+                    Register Business
+                </button>
+            </form>
+        </section>
+
+        <!-- MY BUSINESSES -->
+        <section class="panel">
+            <h2>My Businesses</h2>
+
+            <p class="panel-intro">
+                Check your submissions and their approval status.
+            </p>
+
+            <div id="businessList" class="business-list" aria-live="polite">
+                <div class="loading-state">Loading businesses...</div>
+            </div>
+
+            <button
+                type="button"
+                class="btn btn-secondary full-width"
+                id="refreshButton"
+                style="margin-top: 18px;"
+            >
+                Refresh Businesses
+            </button>
+        </section>
+
+    </div>
+</main>
+
+<footer class="footer">
+    &copy; <span id="currentYear"></span> Global Network Kenya.
+    All rights reserved.
+</footer>
+
+<script>
+"use strict";
+
+/*
+ * Backend and authentication configuration.
+ * Keep these values consistent with login.html and app.js.
+ */
+
+const API_BASE_URL = "http://localhost:3000/api";
+const TOKEN_KEY = "gnk_token";
+const USER_KEY = "gnk_user";
+const BUSINESS_REQUESTS_KEY = "gnk_business_requests";
+
+const form = document.getElementById("businessForm");
+const businessList = document.getElementById("businessList");
+const pageMessage = document.getElementById("pageMessage");
+const submitButton = document.getElementById("submitButton");
+
+document.getElementById("currentYear").textContent =
+    new Date().getFullYear();
+
+function getCookieValue(name) {
+    const cookieString = document.cookie || "";
+    const match = cookieString
+        .split(";")
+        .map((entry) => entry.trim())
+        .find((entry) => entry.startsWith(`${name}=`));
+
+    if (!match) {
+        return "";
+    }
+
+    return decodeURIComponent(match.split("=").slice(1).join("="));
+}
+
+function getToken() {
+    return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY) || getCookieValue(TOKEN_KEY);
+}
+
+function readLocalJson(key, fallback) {
+    try {
+        const rawValue = localStorage.getItem(key) || getCookieValue(key);
+        return rawValue ? JSON.parse(rawValue) : fallback;
+    } catch {
+        return fallback;
+    }
+}
+
+function writeLocalJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getBusinessRequests() {
+    return readLocalJson(BUSINESS_REQUESTS_KEY, []);
+}
+
+function showMessage(message, type = "error") {
+    pageMessage.textContent = message;
+    pageMessage.className = `message visible ${type}`;
+}
+
+function clearMessage() {
+    pageMessage.textContent = "";
+    pageMessage.className = "message";
+}
+
+async function apiRequest(endpoint, options = {}) {
+    const token = getToken();
+
+    const headers = {
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...(options.headers || {})
+    };
+
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
+    let response;
+
+    try {
+        response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...options,
+            headers
+        });
+    } catch {
+        throw new Error(
+            "Cannot connect to the backend. Make sure your server is running on port 3000."
+        );
+    }
+
+    let data;
+
+    try {
+        data = await response.json();
+    } catch {
+        throw new Error("The server returned an invalid response.");
+    }
+
+    if (response.status === 401) {
+        sessionStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(USER_KEY);
+        localStorage.removeItem(USER_KEY);
+        document.cookie = `${USER_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+        document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+
+        window.location.href = "login.html";
+        throw new Error("Your session has expired. Please log in again.");
+    }
+
+    if (!response.ok || data.success === false) {
+        throw new Error(data.message || `Request failed (${response.status}).`);
+    }
+
+    return data;
+}
+
+function safeImageURL(value) {
+    if (!value) return null;
+
+    try {
+        const url = new URL(value);
+
+        if (url.protocol === "http:" || url.protocol === "https:") {
+            return url.href;
+        }
+    } catch {
+        // Invalid image URLs are simply not displayed.
+    }
+
+    return null;
+}
+
+function renderBusinesses(businesses) {
+    businessList.replaceChildren();
+
+    const allBusinesses = Array.isArray(businesses) ? businesses : [];
+    const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
+    const localRequests = getBusinessRequests().filter((request) => {
+        if (!currentUser) return false;
+        return request.user === currentUser.name || request.email === currentUser.email;
+    });
+
+    const mergedBusinesses = [...localRequests, ...allBusinesses].map((business) => ({
+        id: business.id || business.requestId || Date.now() + Math.random(),
+        name: business.name || business.business,
+        category: business.category || "General",
+        county: business.county || "Kenya",
+        phone: business.phone || "Not provided",
+        description: business.description || business.summary || "No description provided",
+        image_url: business.image_url || business.imageUrl || "",
+        status: String(business.status || "pending").toLowerCase()
+    }));
+
+    if (mergedBusinesses.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = "You have not registered any businesses yet.";
+        businessList.appendChild(empty);
+        return;
+    }
+
+    for (const business of mergedBusinesses) {
+        const card = document.createElement("article");
+        card.className = "business-card";
+
+        const imageURL = safeImageURL(business.image_url);
+
+        if (imageURL) {
+            const image = document.createElement("img");
+            image.className = "business-image";
+            image.src = imageURL;
+            image.alt = `Image of ${business.name || "business"}`;
+            image.loading = "lazy";
+            image.referrerPolicy = "no-referrer";
+
+            image.addEventListener("error", () => image.remove());
+            card.appendChild(image);
+        }
+
+        const title = document.createElement("h3");
+        title.textContent = business.name || "Unnamed business";
+        card.appendChild(title);
+
+        const details = [
+            ["Category", business.category],
+            ["County", business.county],
+            ["Phone", business.phone || "Not provided"],
+            ["Description", business.description || "No description provided"]
+        ];
+
+        for (const [label, value] of details) {
+            const paragraph = document.createElement("p");
+            const strong = document.createElement("strong");
+
+            strong.textContent = `${label}: `;
+            paragraph.appendChild(strong);
+            paragraph.appendChild(
+                document.createTextNode(String(value ?? ""))
+            );
+
+            card.appendChild(paragraph);
+        }
+
+        const status = String(business.status || "pending").toLowerCase();
+
+        const badge = document.createElement("span");
+        badge.className = "status " +
+            (["pending", "published", "rejected"].includes(status)
+                ? status
+                : "pending");
+
+        badge.textContent = status;
+        card.appendChild(badge);
+
+        businessList.appendChild(card);
+    }
+}
+
+async function loadBusinesses() {
+    businessList.replaceChildren();
+
+    const loading = document.createElement("div");
+    loading.className = "loading-state";
+    loading.textContent = "Loading businesses...";
+    businessList.appendChild(loading);
+
+    try {
+        const data = await apiRequest("/businesses/mine");
+        renderBusinesses(data.businesses || []);
+    } catch (error) {
+        const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
+        const localRequests = getBusinessRequests().filter((request) => {
+            if (!currentUser) return false;
+            return request.user === currentUser.name || request.email === currentUser.email;
+        });
+
+        if (localRequests.length) {
+            renderBusinesses(localRequests);
+            return;
+        }
+
+        businessList.replaceChildren();
+
+        const failure = document.createElement("div");
+        failure.className = "empty-state";
+        failure.textContent = error.message;
+        businessList.appendChild(failure);
+    }
+}
+
+form.addEventListener("submit", async event => {
+    event.preventDefault();
+    clearMessage();
+
+    if (!getToken()) {
+        showMessage("Please log in before registering a business.");
+        return;
+    }
+
+    if (!form.reportValidity()) return;
+
+    const formData = new FormData(form);
+
+    const payload = {
+        name: String(formData.get("name") || "").trim(),
+        category: String(formData.get("category") || "").trim(),
+        county: String(formData.get("county") || "").trim(),
+        phone: String(formData.get("phone") || "").trim(),
+        description: String(formData.get("description") || "").trim()
+    };
+
+    const imageValue = String(formData.get("image_url") || "").trim();
+
+    if (imageValue) {
+        const validatedImage = safeImageURL(imageValue);
+
+        if (!validatedImage) {
+            showMessage("Please enter a valid HTTP or HTTPS image URL.");
+            return;
+        }
+
+        payload.image_url = validatedImage;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Submitting...";
+
+    try {
+        const data = await apiRequest("/businesses", {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+
+        const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
+        const requests = getBusinessRequests();
+        const submission = {
+            id: Date.now(),
+            user: currentUser?.name || "Customer",
+            email: currentUser?.email || "",
+            business: payload.name,
+            category: payload.category,
+            county: payload.county,
+            phone: payload.phone,
+            description: payload.description,
+            status: "Pending",
+            date: new Date().toISOString()
+        };
+
+        writeLocalJson(BUSINESS_REQUESTS_KEY, [submission, ...requests]);
+
+        showMessage(
+            data.message || "Business registered successfully. Await approval.",
+            "success"
+        );
+
+        form.reset();
+        await loadBusinesses();
+    } catch (error) {
+        const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
+        const requests = getBusinessRequests();
+        const fallbackSubmission = {
+            id: Date.now(),
+            user: currentUser?.name || "Customer",
+            email: currentUser?.email || "",
+            business: payload.name,
+            category: payload.category,
+            county: payload.county,
+            phone: payload.phone,
+            description: payload.description,
+            status: "Pending",
+            date: new Date().toISOString()
+        };
+
+        writeLocalJson(BUSINESS_REQUESTS_KEY, [fallbackSubmission, ...requests]);
+        showMessage(
+            "Business submitted for super admin approval. Your request is now awaiting review.",
+            "success"
+        );
+        form.reset();
+        await loadBusinesses();
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Register Business";
+    }
+});
+
+document.getElementById("refreshButton").addEventListener(
+    "click",
+    loadBusinesses
+);
+
+document.getElementById("logoutButton").addEventListener(
+    "click",
+    event => {
+        event.preventDefault();
+
+        sessionStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(USER_KEY);
+        localStorage.removeItem(USER_KEY);
+        document.cookie = `${USER_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+        document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+
+        window.location.href = "login.html";
+    }
+);
+
+// Require an authenticated session before loading private business data.
+if (!getToken()) {
+    window.location.href = "login.html";
+} else {
+    loadBusinesses();
+}
+</script>
+
+</body>
+</html>
+```

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Business Directory | Global Network Kenya</title>
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      :root {
+        --gnk-blue: #0b3b78;
+        --gnk-blue-strong: #082a5d;
+        --gnk-soft: #edf4ff;
+        --gnk-border: #dfeaf8;
+        --gnk-text: #172b4d;
+        --gnk-muted: #667085;
+        --gnk-card: #ffffff;
+        --gnk-success: #0f766e;
+        --gnk-shadow: 0 14px 28px rgba(11, 59, 120, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: #f5f8fc;
+        color: var(--gnk-text);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      a { color: inherit; text-decoration: none; }
+
+      .page-shell {
+        width: min(1200px, 92%);
+        margin: 32px auto 48px;
+      }
+
+
+      .topbar {
+        background: #ffffff;
+        border-bottom: 1px solid var(--gnk-border);
+      }
+
+      .topbar-inner {
+        width: min(1200px, 92%);
+        margin: 0 auto;
+        min-height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        font-weight: 900;
+        font-size: 1.1rem;
+        color: var(--gnk-blue);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+
+      .nav-links a {
+        color: #334155;
+        font-weight: 700;
+        font-size: 0.94rem;
+      }
+
+      .nav-links a:hover { color: var(--gnk-blue); }
+
+      .hero-card {
+        background: linear-gradient(135deg, #0b3b78, #1758b7 60%, #4585d5);
+        color: white;
+        border-radius: 22px;
+        padding: 30px 28px;
+        box-shadow: var(--gnk-shadow);
+      }
+
+      .hero-card h1 {
+        margin: 0 0 10px;
+        font-size: clamp(2rem, 4vw, 3rem);
+      }
+
+      .hero-card p {
+        margin: 0;
+        max-width: 720px;
+        opacity: 0.9;
+      }
+
+      .toolbar {
+        margin-top: 24px;
+        background: var(--gnk-card);
+        border: 1px solid var(--gnk-border);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: var(--gnk-shadow);
+      }
+
+      .toolbar-grid {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr auto;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .field {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--gnk-border);
+        background: #ffffff;
+        font: inherit;
+      }
+
+      .primary-btn {
+        border: none;
+        border-radius: 10px;
+        background: var(--gnk-blue);
+        color: white;
+        padding: 12px 18px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .primary-btn:hover { background: var(--gnk-blue-strong); }
+
+      .category-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .tab-btn {
+        border: 1px solid var(--gnk-border);
+        background: #fff;
+        color: var(--gnk-text);
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .tab-btn.active {
+        background: var(--gnk-soft);
+        border-color: #bfd4ff;
+        color: var(--gnk-blue);
+      }
+
+      .results-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin: 28px 0 18px;
+        flex-wrap: wrap;
+      }
+
+      .results-head h2 {
+        margin: 0;
+        font-size: 1.4rem;
+      }
+
+      .results-head span {
+        color: var(--gnk-muted);
+        font-weight: 600;
+      }
+
+      .business-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .business-card {
+        background: var(--gnk-card);
+        border: 1px solid var(--gnk-border);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+      }
+
+      .business-card img {
+        display: block;
+        width: 100%;
+        height: 190px;
+        object-fit: cover;
+      }
+
+      .business-body {
+        padding: 18px 18px 16px;
+      }
+
+      .business-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+
+      .business-body h3 {
+        margin: 0;
+        font-size: 1.12rem;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 6px 9px;
+        background: var(--gnk-soft);
+        color: var(--gnk-blue);
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+
+      .meta {
+        color: var(--gnk-muted);
+        font-size: 0.88rem;
+        margin: 6px 0;
+      }
+
+      .business-body p {
+        color: #475467;
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      .business-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        margin-top: 16px;
+        flex-wrap: wrap;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+
+      .status.active {
+        background: #ecfdf5;
+        color: var(--gnk-success);
+      }
+
+      .ghost-link {
+        color: var(--gnk-blue);
+        font-weight: 700;
+      }
+
+      .hire-float {
+        position: fixed;
+        right: 22px;
+        bottom: 24px;
+        z-index: 20;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #f4a623, #f7c863);
+        color: #1b2a3f;
+        font-weight: 900;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        box-shadow: 0 18px 30px rgba(244, 166, 35, 0.32);
+        animation: float-contact 2.2s ease-in-out infinite;
+      }
+
+      @keyframes float-contact {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+
+      .hire-float strong {
+        font-size: 14px;
+        letter-spacing: 0.06em;
+      }
+
+      .empty-state {
+        background: var(--gnk-card);
+        border: 1px dashed var(--gnk-border);
+        border-radius: 16px;
+        padding: 36px 18px;
+        text-align: center;
+        color: var(--gnk-muted);
+      }
+
+      @media (max-width: 900px) {
+        .business-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .toolbar-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .business-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .toolbar-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="../index.html" class="brand">GLOBAL NETWORK KENYA</a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="../index.html">Home</a>
+          <a href="businesses.html">Businesses</a>
+          <a href="../index.html#categories">Categories</a>
+          <a href="packages.html">Packages</a>
+          <a href="login.html">Log in</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="hero-card">
+        <h1>Explore businesses in Kenya</h1>
+        <p>Search by business type, county, or service and discover trusted providers across the country.</p>
+      </section>
+
+      <section class="toolbar" aria-label="Business search and filters">
+        <div class="toolbar-grid">
+          <input id="searchInput" class="field" type="search" placeholder="Search for a business or service..." />
+
+          <select id="categoryFilter" class="field" aria-label="Select category">
+            <option value="">All categories</option>
+            <option value="Agriculture & Farming">Agriculture &amp; Farming</option>
+            <option value="Food & Restaurants">Food &amp; Restaurants</option>
+            <option value="Beauty & Personal Care">Beauty &amp; Personal Care</option>
+            <option value="Construction & Home Services">Construction &amp; Home Services</option>
+            <option value="Education & Training">Education &amp; Training</option>
+            <option value="Healthcare & Medical Services">Healthcare &amp; Medical Services</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Retail & Shopping">Retail &amp; Shopping</option>
+            <option value="Technology & Electronics">Technology &amp; Electronics</option>
+            <option value="Transport & Logistics">Transport &amp; Logistics</option>
+            <option value="Tourism & Hospitality">Tourism &amp; Hospitality</option>
+            <option value="Other Businesses">Other Businesses</option>
+          </select>
+
+          <select id="countyFilter" class="field" aria-label="Select county">
+            <option value="">All counties</option>
+            <option value="Nairobi">Nairobi</option>
+            <option value="Mombasa">Mombasa</option>
+            <option value="Kisumu">Kisumu</option>
+            <option value="Nakuru">Nakuru</option>
+            <option value="Kiambu">Kiambu</option>
+            <option value="Machakos">Machakos</option>
+            <option value="Meru">Meru</option>
+            <option value="Uasin Gishu">Uasin Gishu</option>
+            <option value="Kakamega">Kakamega</option>
+            <option value="Nyeri">Nyeri</option>
+          </select>
+
+          <button id="searchButton" class="primary-btn" type="button">Search</button>
+        </div>
+
+        <div class="category-tabs" id="categoryTabs" aria-label="Category tabs">
+          <button class="tab-btn active" type="button" data-category="">All</button>
+          <button class="tab-btn" type="button" data-category="Agriculture & Farming">Agriculture &amp; Farming</button>
+          <button class="tab-btn" type="button" data-category="Food & Restaurants">Food &amp; Restaurants</button>
+          <button class="tab-btn" type="button" data-category="Beauty & Personal Care">Beauty &amp; Personal Care</button>
+          <button class="tab-btn" type="button" data-category="Construction & Home Services">Construction &amp; Home Services</button>
+          <button class="tab-btn" type="button" data-category="Education & Training">Education &amp; Training</button>
+          <button class="tab-btn" type="button" data-category="Healthcare & Medical Services">Healthcare &amp; Medical Services</button>
+          <button class="tab-btn" type="button" data-category="Real Estate">Real Estate</button>
+          <button class="tab-btn" type="button" data-category="Retail & Shopping">Retail &amp; Shopping</button>
+          <button class="tab-btn" type="button" data-category="Technology & Electronics">Technology &amp; Electronics</button>
+          <button class="tab-btn" type="button" data-category="Transport & Logistics">Transport &amp; Logistics</button>
+          <button class="tab-btn" type="button" data-category="Tourism & Hospitality">Tourism &amp; Hospitality</button>
+          <button class="tab-btn" type="button" data-category="Other Businesses">Other Businesses</button>
+        </div>
+      </section>
+
+      <div class="results-head">
+        <h2>Business listings</h2>
+        <span id="resultCount">0 results</span>
+      </div>
+
+      <section id="businessList" class="business-grid" aria-live="polite"></section>
+    </main>
+
+    <a class="hire-float" href="tel:0118237749" aria-label="Contact me by calling 0118237749">
+      <span>Contact Me</span>
+      <strong>0118237749</strong>
+    </a>
+
+    <script>
+      const businesses = [
+        {
+          name: "NiaTech Digital",
+          category: "Technology & Electronics",
+          county: "Nairobi",
+          phone: "0118237749",
+          description: "Website design, software development, branding and digital growth for startups and SMEs.",
+          image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "Green Valley Fresh",
+          category: "Food & Restaurants",
+          county: "Nakuru",
+          phone: "0118237749",
+          description: "Fresh produce, groceries and farm-to-table food delivery for homes and offices.",
+          image: "https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "Luna Moda House",
+          category: "Beauty & Personal Care",
+          county: "Mombasa",
+          phone: "0118237749",
+          description: "Modern fashion, accessories and tailoring for everyday and event wear.",
+          image: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "WellCare Clinic",
+          category: "Healthcare & Medical Services",
+          county: "Kiambu",
+          phone: "0118237749",
+          description: "Family medicine, wellness checkups and community health support services.",
+          image: "https://images.unsplash.com/photo-1538108149393-fbbd818959ec?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "Bright Path Academy",
+          category: "Education & Training",
+          county: "Kisumu",
+          phone: "0118237749",
+          description: "STEM learning, coaching and youth development programs with practical experiences.",
+          image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "SwiftRide Logistics",
+          category: "Transport & Logistics",
+          county: "Nairobi",
+          phone: "0118237749",
+          description: "Courier, parcel delivery and local transport for businesses and households.",
+          image: "https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "Mile High Mart",
+          category: "Retail & Shopping",
+          county: "Machakos",
+          phone: "0118237749",
+          description: "Daily essentials, household products and value shopping for local families.",
+          image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "Stone & Steel Build",
+          category: "Construction & Home Services",
+          county: "Nyeri",
+          phone: "0118237749",
+          description: "Residential and commercial construction, finishing and renovation services.",
+          image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "Glow Studio Kenya",
+          category: "Beauty & Personal Care",
+          county: "Mombasa",
+          phone: "0118237749",
+          description: "Hair styling, skincare, spa packages and personal grooming for every occasion.",
+          image: "https://images.unsplash.com/photo-1521590832167-7ae2f8c7c4dc?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "Kenya Connect Ventures",
+          category: "Other Businesses",
+          county: "Kakamega",
+          phone: "0118237749",
+          description: "Business consulting, community outreach and support services for local enterprise growth.",
+          image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "Sunrise Agro Growers",
+          category: "Agriculture & Farming",
+          county: "Nakuru",
+          phone: "0118237749",
+          description: "Crop production, farm inputs, and agricultural support for growers and agri-businesses.",
+          image: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=900&q=80"
+        },
+        {
+          name: "Blue Haven Suites",
+          category: "Tourism & Hospitality",
+          county: "Mombasa",
+          phone: "0118237749",
+          description: "Boutique stays, hotel bookings and hospitality experiences for visitors and travelers.",
+          image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80"
+        }
+      ];
+
+      const listEl = document.getElementById("businessList");
+      const searchInput = document.getElementById("searchInput");
+      const categoryFilter = document.getElementById("categoryFilter");
+      const countyFilter = document.getElementById("countyFilter");
+      const resultCount = document.getElementById("resultCount");
+      const tabs = document.querySelectorAll(".tab-btn");
+
+      function getCurrentFilters() {
+        const params = new URLSearchParams(window.location.search);
+        const query = params.get("search") || "";
+        const category = params.get("category") || "";
+        const county = params.get("county") || "";
+
+        return { query, category, county };
+      }
+
+      function applyTabState(category) {
+        tabs.forEach((button) => {
+          const isActive = button.dataset.category === category;
+          button.classList.toggle("active", isActive);
+        });
+      }
+
+      function renderBusinesses() {
+        const query = (searchInput.value || "").trim().toLowerCase();
+        const category = categoryFilter.value || "";
+        const county = countyFilter.value || "";
+
+        const filtered = businesses.filter((business) => {
+          const matchesQuery = !query || [
+            business.name,
+            business.category,
+            business.description,
+            business.county
+          ].join(" ").toLowerCase().includes(query);
+
+          const matchesCategory = !category || business.category === category;
+          const matchesCounty = !county || business.county === county;
+
+          return matchesQuery && matchesCategory && matchesCounty;
+        });
+
+        resultCount.textContent = `${filtered.length} result${filtered.length === 1 ? "" : "s"}`;
+
+        if (!filtered.length) {
+          listEl.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              No businesses match this search. Try another category or county.
+            </div>
+          `;
+          return;
+        }
+
+        listEl.innerHTML = filtered.map((business) => `
+          <article class="business-card">
+            <img src="${business.image}" alt="${business.name}" />
+            <div class="business-body">
+              <div class="business-top">
+                <h3>${business.name}</h3>
+                <span class="tag">${business.category}</span>
+              </div>
+              <p class="meta">${business.county} · ${business.phone}</p>
+              <p>${business.description}</p>
+              <div class="business-footer">
+                <span class="status active">Open to clients</span>
+                <a class="ghost-link" href="../business.html">View business</a>
+              </div>
+            </div>
+          </article>
+        `).join("");
+      }
+
+      function syncFromUrl() {
+        const { query, category, county } = getCurrentFilters();
+
+        if (query) searchInput.value = query;
+        if (category) {
+          categoryFilter.value = category;
+          applyTabState(category);
+        } else {
+          categoryFilter.value = "";
+          applyTabState("");
+        }
+
+        if (county) countyFilter.value = county;
+
+        renderBusinesses();
+      }
+
+      function updateUrl() {
+        const params = new URLSearchParams();
+        const query = (searchInput.value || "").trim();
+        const category = categoryFilter.value || "";
+        const county = countyFilter.value || "";
+
+        if (query) params.set("search", query);
+        if (category) params.set("category", category);
+        if (county) params.set("county", county);
+
+        const queryString = params.toString();
+        const nextUrl = queryString ? `?${queryString}` : "";
+        window.history.replaceState({}, "", `${window.location.pathname}${nextUrl}`);
+      }
+
+      document.getElementById("searchButton").addEventListener("click", () => {
+        updateUrl();
+        renderBusinesses();
+      });
+
+      searchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          updateUrl();
+          renderBusinesses();
+        }
+      });
+
+      categoryFilter.addEventListener("change", () => {
+        const selected = categoryFilter.value || "";
+        applyTabState(selected);
+        updateUrl();
+        renderBusinesses();
+      });
+
+      countyFilter.addEventListener("change", () => {
+        updateUrl();
+        renderBusinesses();
+      });
+
+      tabs.forEach((button) => {
+        button.addEventListener("click", () => {
+          const selected = button.dataset.category || "";
+          categoryFilter.value = selected;
+          applyTabState(selected);
+          updateUrl();
+          renderBusinesses();
+        });
+      });
+
+      syncFromUrl();
+    </script>
+  </body>
+</html>

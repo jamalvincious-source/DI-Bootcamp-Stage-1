@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  phone        String   @default("")
+  passwordHash String   @map("password_hash")
+  role         String   @default("user")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model AdminAuditLog {
+  id        Int      @id @default(autoincrement())
+  actorId   Int      @map("actor_id")
+  action    String
+  targetId  Int?     @map("target_id")
+  details   String   @default("")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("admin_audit_logs")
+}
+
+model SuperAdminLoginChallenge {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique @map("user_id")
+  codeHash  String   @map("code_hash")
+  attempts  Int      @default(0)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("super_admin_login_challenges")
+}

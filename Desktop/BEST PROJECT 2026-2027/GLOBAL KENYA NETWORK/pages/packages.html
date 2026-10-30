@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advertising Packages | Global Network Kenya</title>
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      :root {
+        --gnk-blue: #0b3b78;
+        --gnk-blue-strong: #082a5d;
+        --gnk-soft: #edf4ff;
+        --gnk-border: #dfeaf8;
+        --gnk-text: #172b4d;
+        --gnk-muted: #667085;
+        --gnk-card: #ffffff;
+        --gnk-accent: #f4a623;
+        --gnk-shadow: 0 14px 28px rgba(11, 59, 120, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: #f5f8fc;
+        color: var(--gnk-text);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      a { color: inherit; text-decoration: none; }
+
+      .page-shell {
+        width: min(1200px, 92%);
+        margin: 32px auto 64px;
+      }
+
+
+      .topbar {
+        background: #ffffff;
+        border-bottom: 1px solid var(--gnk-border);
+      }
+
+      .topbar-inner {
+        width: min(1200px, 92%);
+        margin: 0 auto;
+        min-height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        font-weight: 900;
+        font-size: 1.1rem;
+        color: var(--gnk-blue);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+
+      .nav-links a {
+        color: #334155;
+        font-weight: 700;
+        font-size: 0.94rem;
+      }
+
+      .nav-links a:hover { color: var(--gnk-blue); }
+
+      .hero-card {
+        background: linear-gradient(135deg, #0b3b78, #1758b7 60%, #4585d5);
+        color: white;
+        border-radius: 22px;
+        padding: 30px 28px;
+        box-shadow: var(--gnk-shadow);
+      }
+
+      .hero-card h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 4vw, 3rem);
+      }
+
+      .hero-card p {
+        margin: 0;
+        max-width: 760px;
+        opacity: 0.9;
+      }
+
+      .packages-grid {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px;
+      }
+
+      .package-card {
+        background: var(--gnk-card);
+        border: 1px solid var(--gnk-border);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+      }
+
+      .package-card img {
+        display: block;
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+      }
+
+      .package-body {
+        padding: 22px 20px 20px;
+      }
+
+      .package-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--gnk-soft);
+        color: var(--gnk-blue);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .package-body h2 {
+        margin: 16px 0 10px;
+        font-size: 1.5rem;
+      }
+
+      .price {
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--gnk-blue);
+        margin-bottom: 14px;
+      }
+
+      .package-body p {
+        margin: 0 0 18px;
+        color: #475467;
+        line-height: 1.7;
+      }
+
+      .features {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .features li {
+        color: var(--gnk-text);
+        font-size: 0.95rem;
+        position: relative;
+        padding-left: 20px;
+      }
+
+      .features li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #0f766e;
+        font-weight: 900;
+      }
+
+      .cta {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 10px;
+        border: 1px solid var(--gnk-border);
+        background: var(--gnk-blue);
+        color: white;
+        font-weight: 800;
+      }
+
+      .cta.secondary {
+        background: var(--gnk-accent);
+        border-color: var(--gnk-accent);
+        color: #1c2b40;
+      }
+
+      .notes {
+        margin-top: 30px;
+        padding: 20px 22px;
+        border: 1px solid var(--gnk-border);
+        border-radius: 18px;
+        background: white;
+        color: var(--gnk-muted);
+        line-height: 1.7;
+      }
+
+      .hire-float {
+        position: fixed;
+        right: 22px;
+        bottom: 24px;
+        z-index: 20;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #f4a623, #f7c863);
+        color: #1b2a3f;
+        font-weight: 900;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        box-shadow: 0 18px 30px rgba(244, 166, 35, 0.32);
+        animation: float-contact 2.2s ease-in-out infinite;
+      }
+
+      @keyframes float-contact {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+
+      .hire-float strong {
+        font-size: 14px;
+        letter-spacing: 0.06em;
+      }
+
+      @media (max-width: 900px) {
+        .packages-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="../index.html" class="brand">GLOBAL NETWORK KENYA</a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="../index.html">Home</a>
+          <a href="businesses.html">Businesses</a>
+          <a href="../index.html#categories">Categories</a>
+          <a href="packages.html">Packages</a>
+          <a href="login.html">Log in</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="hero-card">
+        <h1>Advertising packages</h1>
+        <p>
+          Reach more customers with flexible advertising options designed for small businesses,
+          growing brands, and premium visibility campaigns across Global Network Kenya.
+        </p>
+      </section>
+
+      <section class="packages-grid" aria-label="Package options">
+        <article class="package-card">
+          <img src="https://miro.medium.com/v2/resize:fit:1400/1*Gy9UXS5GQBFI9hVLIJK9Tg.png?utm_source=chatgpt.com" alt="Standard package business directory listing example" />
+          <div class="package-body">
+            <span class="package-badge">Standard</span>
+            <h2>Standard Package</h2>
+            <div class="price">KES 500 / 30 days</div>
+            <p>For small shops, startups and local businesses.</p>
+            <ul class="features">
+              <li>Business directory listing</li>
+              <li>Contact details</li>
+              <li>Description and one image</li>
+            </ul>
+            <a class="cta package-button" href="login.html?package=standard" data-package="standard" data-package-name="Standard Package">Choose Standard</a>
+          </div>
+        </article>
+
+        <article class="package-card">
+          <img src="https://s.tmimgcdn.com/scr/1200x750/263000/rozwijaj-swoja-firme-marketing-instagram-i-facebook-szablon-postu-w-mediach-spolecznosciowych_263095-original.jpg?utm_source=chatgpt.com" alt="Featured package promotional image" />
+          <div class="package-body">
+            <span class="package-badge">Featured</span>
+            <h2>Featured Package</h2>
+            <div class="price">KES 1,500 / 30 days</div>
+            <p>For businesses seeking more prominent placement.</p>
+            <ul class="features">
+              <li>All Standard features</li>
+              <li>Highlighted listing</li>
+              <li>Placement in featured sections</li>
+            </ul>
+            <a class="cta secondary package-button" href="login.html?package=featured" data-package="featured" data-package-name="Featured Package">Choose Featured</a>
+          </div>
+        </article>
+
+        <article class="package-card">
+          <img src="https://biz-file.com/c/2510/792771-700x449.png?utm_source=chatgpt.com" alt="Premium banner package advertising example" />
+          <div class="package-body">
+            <span class="package-badge">Premium</span>
+            <h2>Premium Banner Package</h2>
+            <div class="price">KES 3,000 / 30 days</div>
+            <p>For businesses wanting a larger advertising display.</p>
+            <ul class="features">
+              <li>Website banner placement</li>
+              <li>Promotional image</li>
+              <li>Link to the advertised business</li>
+            </ul>
+            <a class="cta package-button" href="login.html?package=banner" data-package="banner" data-package-name="Premium Banner Package">Choose Premium</a>
+          </div>
+        </article>
+      </section>
+
+      <div class="notes">
+        These prices are suggested starting prices, not verified market rates. The linked images are third-party examples and should be checked for usage permission before commercial use.
+      </div>
+    </main>
+
+    <a class="hire-float" href="tel:0118237749" aria-label="Contact me by calling 0118237749">
+      <span>Contact Me</span>
+      <strong>0118237749</strong>
+    </a>
+  </body>
+</html>

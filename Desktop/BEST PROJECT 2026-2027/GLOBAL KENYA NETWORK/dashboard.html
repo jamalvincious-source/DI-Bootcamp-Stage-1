@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Global Network Kenya</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      :root {
+        --gnk-blue: #0b3b78;
+        --gnk-blue-strong: #072d5f;
+        --gnk-sky: #ebf3ff;
+        --gnk-border: #dfeaf8;
+        --gnk-text: #1f2937;
+        --gnk-muted: #667085;
+        --gnk-success: #0f766e;
+        --gnk-warning: #b45309;
+        --gnk-danger: #b42318;
+        --gnk-card: #ffffff;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: #f5f8fc;
+        color: var(--gnk-text);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      a { color: inherit; text-decoration: none; }
+
+
+      .topbar {
+        background: #fff;
+        border-bottom: 1px solid var(--gnk-border);
+      }
+
+      .topbar-inner {
+        width: min(1200px, 92%);
+        margin: 0 auto;
+        min-height: 74px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        font-weight: 900;
+        color: var(--gnk-blue);
+        letter-spacing: 0.02em;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+
+      .nav-links a {
+        color: #334155;
+        font-weight: 700;
+        font-size: 0.96rem;
+      }
+
+      .nav-links a:hover { color: var(--gnk-blue); }
+
+      .nav-button {
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--gnk-border);
+        background: var(--gnk-sky);
+        color: var(--gnk-blue);
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .dashboard-shell {
+        width: min(1200px, 92%);
+        margin: 32px auto 48px;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, #0b3b78, #1758b7 60%, #4285d4);
+        color: white;
+        border-radius: 20px;
+        padding: 28px 30px;
+        box-shadow: 0 18px 35px rgba(11, 59, 120, 0.15);
+      }
+
+      .hero-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        opacity: 0.8;
+        margin-bottom: 8px;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        line-height: 1.1;
+      }
+
+      .hero p {
+        margin: 10px 0 0;
+        max-width: 780px;
+        opacity: 0.9;
+      }
+
+      .badge {
+        border: 1px solid rgba(255,255,255,0.25);
+        background: rgba(255,255,255,0.08);
+        border-radius: 999px;
+        padding: 9px 14px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 26px;
+      }
+
+      .stat-card {
+        background: var(--gnk-card);
+        border: 1px solid var(--gnk-border);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 7px 18px rgba(15, 23, 42, 0.04);
+      }
+
+      .stat-card .label {
+        color: var(--gnk-muted);
+        font-size: 0.83rem;
+        margin-bottom: 10px;
+      }
+
+      .stat-card .value {
+        font-size: clamp(1.6rem, 2.5vw, 2.3rem);
+        font-weight: 900;
+        color: var(--gnk-blue);
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.9fr);
+        gap: 22px;
+        margin-top: 28px;
+      }
+
+      .panel {
+        background: var(--gnk-card);
+        border: 1px solid var(--gnk-border);
+        border-radius: 18px;
+        padding: 20px 22px;
+        box-shadow: 0 7px 18px rgba(15, 23, 42, 0.04);
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+
+      .panel h2 {
+        margin: 0;
+        font-size: 1.3rem;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #ecfdf5;
+        color: var(--gnk-success);
+        border: 1px solid #bbf7d0;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .market-list,
+      .request-list,
+      .video-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .market-item,
+      .request-item,
+      .video-item {
+        border: 1px solid var(--gnk-border);
+        border-radius: 14px;
+        background: #fff;
+        padding: 16px;
+      }
+
+      .item-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+      }
+
+      .item-top h3 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+
+      .meta {
+        color: var(--gnk-muted);
+        font-size: 0.88rem;
+        margin: 4px 0;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #eef6ff;
+        color: var(--gnk-blue);
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      button,
+      .secondary-btn,
+      .ghost-btn {
+        appearance: none;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+
+      .primary-btn {
+        background: var(--gnk-blue);
+        color: white;
+      }
+
+      .primary-btn:hover { background: var(--gnk-blue-strong); }
+
+      .secondary-btn {
+        background: #eaf1ff;
+        color: var(--gnk-blue);
+      }
+
+      .ghost-btn {
+        background: transparent;
+        border: 1px solid var(--gnk-border);
+        color: var(--gnk-text);
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.72rem;
+        letter-spacing: 0.03em;
+      }
+
+      .status.pending { background: #fff7eb; color: var(--gnk-warning); }
+      .status.active { background: #ecfdf5; color: var(--gnk-success); }
+      .status.review { background: #fef3c7; color: #92400e; }
+      .status.approved { background: #ecfdf5; color: var(--gnk-success); }
+      .status.rejected { background: #fef3f2; color: var(--gnk-danger); }
+
+      .empty-state {
+        border: 1px dashed var(--gnk-border);
+        border-radius: 14px;
+        padding: 24px 16px;
+        text-align: center;
+        color: var(--gnk-muted);
+      }
+
+      .request-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+
+      .request-table th,
+      .request-table td {
+        text-align: left;
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--gnk-border);
+        vertical-align: middle;
+      }
+
+      .request-table th {
+        color: var(--gnk-muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+      }
+
+      .video-form {
+        display: grid;
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .video-form input,
+      .video-form textarea {
+        width: 100%;
+        padding: 12px 13px;
+        border: 1px solid var(--gnk-border);
+        border-radius: 10px;
+        font: inherit;
+        background: #fff;
+      }
+
+      .video-form textarea {
+        min-height: 88px;
+        resize: vertical;
+      }
+
+      .summary-box {
+        display: grid;
+        gap: 12px;
+      }
+
+      .summary-card {
+        background: linear-gradient(180deg, #ffffff, #f8fbff);
+        border: 1px solid var(--gnk-border);
+        border-radius: 14px;
+        padding: 14px 15px;
+      }
+
+      .summary-card h3 {
+        margin: 0 0 6px;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--gnk-muted);
+      }
+
+      .summary-card strong {
+        font-size: 1.5rem;
+        color: var(--gnk-blue);
+      }
+
+      .right-stack {
+        display: grid;
+        gap: 22px;
+      }
+
+      @media (max-width: 920px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .content-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .panel,
+        .hero {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="index.html" class="brand">GLOBAL NETWORK KENYA</a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="index.html">Home</a>
+          <a href="business.html">Businesses</a>
+          <a href="pages/packages.html">Packages</a>
+          <a href="dashboard.html" class="active">Dashboard</a>
+          <button class="nav-button" id="logoutBtn" type="button">Log out</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="dashboard-shell">      <section class="hero" id="hero">        <div class="hero-top">
+          <div>
+            <div class="eyebrow">Network Portal</div>
+            <h1 id="welcomeTitle">Your dashboard</h1>
+            <p id="dashboardIntro">Track market activity and manage quick requests.</p>
+          </div>
+          <div>
+            <div class="badge" id="roleBadge">User</div>
+          </div>
+        </div>
+      </section>
+
+      <div id="packagePrompt" style="display:none; margin:18px 0 0; padding:14px 16px; border-radius:12px; background:#eef6ff; border:1px solid #bfdaf8; color:#0b3b78; font-weight:700;"></div>
+
+      <section class="stats-grid" id="statsGrid"></section>
+
+      <section class="content-grid">
+        <div id="primaryPanel"></div>
+
+        <aside class="right-stack" id="secondaryPanel"></aside>
+      </section>
+    </main>
+
+    <script>
+      const API_URL = "http://localhost:3000/api";
+      let authenticatedUser = null;
+
+      const MARKET_ITEMS = [
+        {
+          id: 1,
+          name: "Green Valley Fresh",
+          category: "Agriculture",
+          county: "Nakuru",
+          summary: "Organic fruits, vegetables and farm produce for urban wholesale and retail deliveries.",
+          status: "Active"
+        },
+        {
+          id: 2,
+          name: "Kenya Home Build",
+          category: "Construction",
+          county: "Nairobi",
+          summary: "Modern residential and commercial design, renovation and project management services.",
+          status: "Active"
+        },
+        {
+          id: 3,
+          name: "NiaTech Digital",
+          category: "Technology",
+          county: "Mombasa",
+          summary: "Web design, branding and digital growth solutions for small businesses and startups.",
+          status: "Active"
+        },
+        {
+          id: 4,
+          name: "Harbor Luxe Hotel",
+          category: "Tourism",
+          county: "Mombasa",
+          summary: "Boutique hospitality, events and guest experiences for tourists and business travelers.",
+          status: "Active"
+        }
+      ];
+
+      const DEFAULT_VIDEOS = [
+        {
+          title: "Farm-to-market showcase",
+          business: "Green Valley Fresh",
+          description: "Behind-the-scenes of harvest, packaging and fast delivery coverage.",
+          url: "https://example.com/video/farm-market"
+        },
+        {
+          title: "Property walkthrough",
+          business: "Kenya Home Build",
+          description: "A virtual tour covering premium finishes and material choices.",
+          url: "https://example.com/video/home-build"
+        }
+      ];
+
+      const ROLE_TEXT = {
+        user: "User",
+        admin: "Admin",
+        super_admin: "Super Admin"
+      };
+
+      function getCookieValue(name) {
+        const cookieString = document.cookie || "";
+        const match = cookieString
+          .split(";")
+          .map((entry) => entry.trim())
+          .find((entry) => entry.startsWith(`${name}=`));
+
+        if (!match) {
+          return "";
+        }
+
+        return decodeURIComponent(match.split("=").slice(1).join("="));
+      }
+
+      function safeRead(key, fallback) {
+        try {
+          const value = localStorage.getItem(key) || sessionStorage.getItem(key) || getCookieValue(key);
+          return value ? JSON.parse(value) : fallback;
+        } catch (error) {
+          return fallback;
+        }
+      }
+
+      function writeJson(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+
+      function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, character => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[character]);
+      }
+
+      async function adminRequest(path, options = {}) {
+        const token = localStorage.getItem("gnk_token") ||
+          sessionStorage.getItem("gnk_token") ||
+          getCookieValue("gnk_token");
+        const response = await fetch(`${API_URL}${path}`, {
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...options.headers
+          }
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (response.status === 401) {
+          clearSession();
+          window.location.href = "pages/login.html";
+          throw new Error("Your session has expired. Please log in again.");
+        }
+        if (!response.ok) {
+          throw new Error(result.message || "The admin request failed.");
+        }
+        return result;
+      }
+
+      function getCurrentUser() {
+        return authenticatedUser;
+      }
+
+      function ensureAccess() {
+        const user = getCurrentUser();
+        if (!user) {
+          window.location.href = "pages/login.html";
+          return null;
+        }
+        return user;
+      }
+
+      async function loadAuthenticatedUser() {
+        const token = localStorage.getItem("gnk_token") ||
+          sessionStorage.getItem("gnk_token") ||
+          getCookieValue("gnk_token");
+
+        if (!token) {
+          return null;
+        }
+
+        const response = await fetch(`${API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (response.status === 401) {
+          return null;
+        }
+
+        if (!response.ok) {
+          throw new Error(result.message || "Unable to verify your account.");
+        }
+
+        if (!result.user || !result.user.role) {
+          throw new Error("The server returned an incomplete account profile.");
+        }
+
+        return result.user;
+      }
+
+      function clearSession() {
+        localStorage.removeItem("gnk_user");
+        localStorage.removeItem("gnk_token");
+        sessionStorage.removeItem("gnk_user");
+        sessionStorage.removeItem("gnk_token");
+        document.cookie = "gnk_user=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax";
+        document.cookie = "gnk_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax";
+      }
+
+      function showPackagePromptIfNeeded() {
+        const params = new URLSearchParams(window.location.search);
+        const packageName = params.get("package");
+        const phone = params.get("phone");
+        const message = params.get("message");
+        const promptElement = document.getElementById("packagePrompt");
+
+        if (!promptElement || !packageName) {
+          return;
+        }
+
+        const packageText = {
+          standard: "Standard Package",
+          featured: "Featured Package",
+          banner: "Premium Banner Package"
+        }[packageName] || "Selected package";
+
+        const baseMessage = message
+          ? decodeURIComponent(message)
+          : `Your ${packageText} subscription is ready. We will send updates to your registered mobile number.`;
+
+        const displayPhone = phone ? decodeURIComponent(phone) : "your registered mobile number";
+        promptElement.textContent = `${baseMessage} Registered number: ${displayPhone}.`;
+        promptElement.style.display = "block";
+      }
+
+      function formatDateStamp(dateValue) {
+        return new Date(dateValue).toLocaleDateString("en-KE", {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        });
+      }
+
+      function normalizeStatus(value, fallback = "Pending") {
+        const status = String(value ?? fallback).trim();
+        const lower = status.toLowerCase();
+
+        if (lower === "approved") return "Approved";
+        if (lower === "rejected") return "Rejected";
+        if (lower === "published") return "Published";
+        if (lower === "pending") return "Pending";
+
+        return fallback;
+      }
+
+      function getRequests() {
+        return safeRead("gnk_advert_requests", [
+          {
+            id: 101,
+            user: "Grace Wanjiku",
+            business: "NiaTech Digital",
+            status: "Pending",
+            date: new Date().toISOString()
+          },
+          {
+            id: 102,
+            user: "James Kariuki",
+            business: "Harbor Luxe Hotel",
+            status: "Approved",
+            date: new Date(Date.now() - 86400000).toISOString()
+          }
+        ]).map(request => ({ ...request, status: normalizeStatus(request.status, "Pending") }));
+      }
+
+      function getBusinessRequests() {
+        return safeRead("gnk_business_requests", [
+          {
+            id: 201,
+            user: "Grace Wanjiku",
+            business: "Bamboo Blends Cafe",
+            category: "Food",
+            county: "Nairobi",
+            status: "Pending",
+            date: new Date().toISOString()
+          },
+          {
+            id: 202,
+            user: "James Kariuki",
+            business: "Kingsway Interiors",
+            category: "Construction",
+            county: "Kiambu",
+            status: "Approved",
+            date: new Date(Date.now() - 172800000).toISOString()
+          }
+        ]).map(request => ({ ...request, status: normalizeStatus(request.status, "Pending") }));
+      }
+
+      function getVideos() {
+        return safeRead("gnk_business_videos", DEFAULT_VIDEOS);
+      }
+
+      function renderStats() {
+        const statsGrid = document.getElementById("statsGrid");
+
+        const requests = getRequests().filter(item => item.user === (getCurrentUser()?.name || "User"));
+        const businessRequests = getBusinessRequests().filter(item => item.user === (getCurrentUser()?.name || "User"));
+        const businesses = MARKET_ITEMS.length;
+        const videos = getVideos().length;
+
+        statsGrid.innerHTML = `
+          <article class="stat-card">
+            <div class="label">Market listings</div>
+            <div class="value">${businesses}</div>
+          </article>
+          <article class="stat-card">
+            <div class="label">My requests</div>
+            <div class="value">${requests.length + businessRequests.length}</div>
+          </article>
+          <article class="stat-card">
+            <div class="label">Business videos</div>
+            <div class="value">${videos}</div>
+          </article>
+          <article class="stat-card">
+            <div class="label">Open opportunity</div>
+            <div class="value">${MARKET_ITEMS.length - 1}</div>
+          </article>
+        `;
+      }
+
+      function renderUserDashboard(user) {
+        const primaryPanel = document.getElementById("primaryPanel");
+        const secondaryPanel = document.getElementById("secondaryPanel");
+
+        const requestList = getRequests().filter(item => item.user === user.name);
+        const businessRequestList = getBusinessRequests().filter(item => item.user === user.name);
+        const combinedRequests = [...requestList, ...businessRequestList];
+
+        primaryPanel.innerHTML = `
+          <div class="panel">
+            <div class="panel-header">
+              <h2>What is on the market</h2>
+              <span class="pill">Live updates</span>
+            </div>
+            <div class="market-list">
+              ${MARKET_ITEMS.map(item => `
+                <article class="market-item">
+                  <div class="item-top">
+                    <h3>${item.name}</h3>
+                    <span class="tag">${item.category}</span>
+                  </div>
+                  <p class="meta">${item.county} · ${item.status}</p>
+                  <p>${item.summary}</p>
+                  <div class="actions">
+                    <span class="status active">Open</span>
+                    <button class="primary-btn" type="button" data-request-id="${item.id}">Send advert request</button>
+                  </div>
+                </article>
+              `).join("")}
+            </div>
+          </div>
+        `;
+
+        secondaryPanel.innerHTML = `
+          <div class="panel">
+            <div class="panel-header">
+              <h2>My requests</h2>
+              <span class="pill">${combinedRequests.length}</span>
+            </div>
+            <div class="request-list">
+              ${combinedRequests.length ? combinedRequests.map(item => {
+                const itemStatus = normalizeStatus(item.status, "Pending");
+                return `
+                  <article class="request-item">
+                    <div class="item-top">
+                      <h3>${item.business}</h3>
+                      <span class="status ${itemStatus === "Approved" ? "approved" : itemStatus === "Pending" ? "pending" : itemStatus === "Rejected" ? "rejected" : "review"}">${itemStatus}</span>
+                    </div>
+                    <p class="meta">Submitted: ${formatDateStamp(item.date)}</p>
+                  </article>
+                `;
+              }).join("") : `<div class="empty-state">No advert or business requests yet. Start by sending one.</div>`}
+            </div>
+          </div>
+        `;
+
+        document.querySelectorAll("[data-request-id]").forEach(button => {
+          button.addEventListener("click", () => {
+            const id = Number(button.dataset.requestId);
+            const item = MARKET_ITEMS.find(entry => entry.id === id);
+            if (!item) return;
+
+            const requests = getRequests();
+            const existing = requests.some(entry => entry.business === item.name && entry.user === user.name);
+            if (existing) {
+              alert("You already sent a request for this business.");
+              return;
+            }
+
+            requests.unshift({
+              id: Date.now(),
+              user: user.name,
+              business: item.name,
+              status: "Pending",
+              date: new Date().toISOString()
+            });
+            writeJson("gnk_advert_requests", requests);
+            renderDashboard();
+          });
+        });
+      }
+
+      function renderAdminDashboard() {
+        const primaryPanel = document.getElementById("primaryPanel");
+        const secondaryPanel = document.getElementById("secondaryPanel");
+        document.getElementById("dashboardIntro").textContent =
+          "Manage accounts and administrator access. Business, advert, package, and payment records are not yet connected to this backend.";
+        document.getElementById("statsGrid").innerHTML = "";
+        primaryPanel.innerHTML = `
+          <div class="panel">
+            <div class="panel-header"><h2>User and administrator management</h2></div>
+            <div class="form-group"><label for="adminUserSearch">Search accounts</label>
+              <input id="adminUserSearch" type="search" placeholder="Name or email" /></div>
+            <div id="adminUserMessage" role="status"></div>
+            <div class="table-wrapper"><table class="request-table">
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="adminUsersBody"><tr><td colspan="5">Loading accounts…</td></tr></tbody>
+            </table></div>
+          </div>`;
+        secondaryPanel.innerHTML = `
+          <div class="panel">
+            <div class="panel-header"><h2>Create account</h2></div>
+            <form class="video-form" id="adminCreateUserForm">
+              <input id="adminNewName" type="text" placeholder="Full name" minlength="2" maxlength="100" required />
+              <input id="adminNewEmail" type="email" placeholder="Email address" required />
+              <input id="adminNewPassword" type="password" placeholder="Temporary password (12+ characters)" minlength="12" required />
+              <select id="adminNewRole"><option value="admin">Administrator</option><option value="user">User</option><option value="advertiser">Advertiser</option></select>
+              <button class="primary-btn" type="submit">Create account</button>
+            </form>
+          </div>
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Recent admin activity</h2></div>
+            <div id="adminAuditLog" class="request-list">Loading audit log…</div>
+          </div>
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Other oversight areas</h2></div>
+            <p class="meta">Business approvals, adverts, payments/refunds, packages, analytics, categories, counties, settings, and backups need persistent backend models and APIs before they can be managed here.</p>
+          </div>`;
+
+        const messageBox = document.getElementById("adminUserMessage");
+        const showAdminMessage = (text, isError = false) => {
+          messageBox.textContent = text;
+          messageBox.style.color = isError ? "#b42318" : "#0f766e";
+        };
+        const loadUsers = async (search = "") => {
+          const result = await adminRequest(`/admin/users?q=${encodeURIComponent(search)}`);
+          document.getElementById("adminUsersBody").innerHTML = result.users.length
+            ? result.users.map(user => `
+              <tr data-admin-user-row="${user.id}">
+                <td>${escapeHTML(user.name)}</td><td>${escapeHTML(user.email)}</td>
+                <td><select data-user-role="${user.id}" ${user.role === "super_admin" ? "disabled" : ""}>
+                  ${["user", "advertiser", "admin", "super_admin"].map(role => `<option value="${role}" ${role === user.role ? "selected" : ""}>${escapeHTML(role)}</option>`).join("")}
+                </select></td>
+                <td>${user.isActive ? "Active" : "Suspended"}</td>
+                <td>
+                  ${user.role === "super_admin" ? "Protected account" : `
+                    <button class="secondary-btn" type="button" data-save-user="${user.id}">Save role</button>
+                    <button class="ghost-btn" type="button" data-toggle-user="${user.id}" data-active="${user.isActive}">${user.isActive ? "Suspend" : "Activate"}</button>
+                    <button class="ghost-btn" type="button" data-delete-user="${user.id}">Delete</button>`}
+                </td>
+              </tr>`).join("")
+            : `<tr><td colspan="5">No matching accounts.</td></tr>`;
+        };
+        const loadAdminData = async () => {
+          const [overview, audit] = await Promise.all([
+            adminRequest("/admin/overview"),
+            adminRequest("/admin/audit-logs")
+          ]);
+          const data = overview.overview;
+          document.getElementById("statsGrid").innerHTML = `
+            <article class="stat-card"><div class="label">Total users</div><div class="value">${data.totalUsers}</div></article>
+            <article class="stat-card"><div class="label">Active users</div><div class="value">${data.activeUsers}</div></article>
+            <article class="stat-card"><div class="label">Suspended users</div><div class="value">${data.inactiveUsers}</div></article>
+            <article class="stat-card"><div class="label">Administrators</div><div class="value">${data.usersByRole.admin || 0}</div></article>`;
+          document.getElementById("adminAuditLog").innerHTML = audit.logs.length
+            ? audit.logs.map(log => `<article class="request-item"><strong>${escapeHTML(log.action)}</strong><p class="meta">${escapeHTML(log.details)} · ${new Date(log.createdAt).toLocaleString()}</p></article>`).join("")
+            : "No admin actions recorded yet.";
+          await loadUsers();
+        };
+
+        loadAdminData().catch(error => showAdminMessage(error.message, true));
+        document.getElementById("adminUserSearch").addEventListener("input", event => {
+          loadUsers(event.target.value).catch(error => showAdminMessage(error.message, true));
+        });
+        document.getElementById("adminCreateUserForm").addEventListener("submit", async event => {
+          event.preventDefault();
+          const button = event.currentTarget.querySelector("button[type=submit]");
+          button.disabled = true;
+          try {
+            await adminRequest("/admin/users", {
+              method: "POST",
+              body: JSON.stringify({
+                name: document.getElementById("adminNewName").value.trim(),
+                email: document.getElementById("adminNewEmail").value.trim(),
+                password: document.getElementById("adminNewPassword").value,
+                role: document.getElementById("adminNewRole").value
+              })
+            });
+            event.currentTarget.reset();
+            showAdminMessage("Account created.");
+            await loadAdminData();
+          } catch (error) {
+            showAdminMessage(error.message, true);
+          } finally {
+            button.disabled = false;
+          }
+        });
+        document.getElementById("adminUsersBody").addEventListener("click", async event => {
+          const button = event.target.closest("button");
+          if (!button) return;
+          const id = button.dataset.saveUser || button.dataset.toggleUser || button.dataset.deleteUser;
+          if (!id) return;
+          try {
+            if (button.dataset.deleteUser) {
+              if (!window.confirm("Permanently delete this account? This cannot be undone.")) return;
+              await adminRequest(`/admin/users/${id}`, { method: "DELETE" });
+            } else if (button.dataset.toggleUser) {
+              await adminRequest(`/admin/users/${id}`, {
+                method: "PATCH",
+                body: JSON.stringify({ isActive: button.dataset.active !== "true" })
+              });
+            } else {
+              const role = document.querySelector(`[data-user-role="${id}"]`).value;
+              await adminRequest(`/admin/users/${id}`, {
+                method: "PATCH",
+                body: JSON.stringify({ role })
+              });
+            }
+            showAdminMessage("Account updated.");
+            await loadAdminData();
+          } catch (error) {
+            showAdminMessage(error.message, true);
+          }
+        });
+      }
+
+      function renderDashboard() {
+        const user = ensureAccess();
+        if (!user) return;
+
+        const role = user.role === "super_admin" ? "super_admin" : user.role === "admin" ? "admin" : "user";
+        document.getElementById("welcomeTitle").textContent = role === "super_admin"
+          ? `Welcome, ${user.name || "Super Admin"}`
+          : `Welcome, ${user.name || "User"}`;
+
+        document.getElementById("dashboardIntro").textContent = role === "super_admin"
+          ? "Manage user accounts and administrator access from one control centre."
+          : role === "admin"
+            ? "Review your account and the available network opportunities."
+          : "Review live market opportunities and send your advert request directly to the admin team.";
+
+        document.getElementById("roleBadge").textContent = ROLE_TEXT[role] || "User";
+
+        if (role === "super_admin") {
+          renderAdminDashboard();
+        } else {
+          renderStats();
+          renderUserDashboard(user);
+        }
+      }
+
+      function renderSuperAdminDemo() {
+        const pendingRequests = [
+          { id: 1, type: "Business", name: "Savanna Harvest Co.", owner: "Amina Wekesa", location: "Nakuru", age: "8 min ago", status: "Pending" },
+          { id: 2, type: "Property advert", name: "Kilimani 3-Bedroom Apartment", owner: "Brian Otieno", location: "Nairobi", age: "14 min ago", status: "Pending" },
+          { id: 3, type: "Business", name: "Coastline Solar Solutions", owner: "Fatuma Ali", location: "Mombasa", age: "21 min ago", status: "Pending" },
+          { id: 4, type: "Vehicle advert", name: "2019 Toyota Harrier", owner: "Peter Mwangi", location: "Kiambu", age: "29 min ago", status: "Pending" },
+          { id: 5, type: "Business", name: "Highland View Academy", owner: "Grace Njeri", location: "Nyeri", age: "42 min ago", status: "Pending" },
+          { id: 6, type: "Product advert", name: "Handmade Sisal Home Collection", owner: "Wanjiku Kamau", location: "Machakos", age: "55 min ago", status: "Pending" },
+          { id: 7, type: "Business", name: "Lakeview Medical Supplies", owner: "Daniel Ochieng", location: "Kisumu", age: "1 hr ago", status: "Pending" },
+          { id: 8, type: "Service advert", name: "Mwangaza Legal Services", owner: "Joyce Atieno", location: "Kakamega", age: "1 hr ago", status: "Pending" },
+          { id: 9, type: "Business", name: "Taita Fresh Foods", owner: "Mariam Juma", location: "Taita-Taveta", age: "2 hrs ago", status: "Pending" },
+          { id: 10, type: "School advert", name: "Bright Future Junior School", owner: "Samuel Kiptoo", location: "Uasin Gishu", age: "2 hrs ago", status: "Pending" },
+          { id: 11, type: "Business", name: "Northern Star Logistics", owner: "Hassan Noor", location: "Garissa", age: "3 hrs ago", status: "Pending" },
+          { id: 12, type: "Property advert", name: "Nyali Beachfront Guest House", owner: "Lucy Muthoni", location: "Mombasa", age: "3 hrs ago", status: "Pending" }
+        ];
+        const pendingRequestsNotShown = 6;
+
+        document.title = "Super Admin Demo | Global Network Kenya";
+        document.getElementById("logoutBtn").textContent = "Exit demo";
+        document.getElementById("welcomeTitle").textContent = "Super Admin Dashboard (Demo)";
+        document.getElementById("dashboardIntro").textContent =
+          "Preview with sample data. Approval actions affect this demo only; no real accounts, listings, adverts, or payments are changed.";
+        document.getElementById("roleBadge").textContent = "DEMO · SAMPLE DATA";
+        document.getElementById("packagePrompt").style.display = "none";
+        document.getElementById("statsGrid").innerHTML = `
+          <article class="stat-card"><div class="label">Registered users</div><div class="value">1,284</div></article>
+          <article class="stat-card"><div class="label">Active businesses</div><div class="value">346</div></article>
+          <article class="stat-card"><div class="label">Pending approvals</div><div class="value">18</div></article>
+          <article class="stat-card"><div class="label">Monthly payments</div><div class="value">KES 482K</div></article>`;
+        document.getElementById("primaryPanel").innerHTML = `
+          <div class="panel">
+            <div class="panel-header"><h2>Platform overview</h2><span class="pill">Sample data</span></div>
+            <div class="market-list">
+              <article class="market-item"><div class="item-top"><h3>User &amp; administrator management</h3><span class="tag">1,284 users</span></div><p>Review accounts, roles, access status, and administrator activity.</p><span class="status active">Preview only</span></article>
+              <article class="market-item"><div class="item-top"><h3>Business registrations</h3><span class="tag">7 awaiting review</span></div><p>Review business profiles and publication requests across counties.</p><span class="status pending">Preview only</span></article>
+              <article class="market-item"><div class="item-top"><h3>Advertisements</h3><span class="tag">11 pending</span></div><p>Oversee adverts for products, services, property, schools, and vehicles.</p><span class="status pending">Preview only</span></article>
+              <article class="market-item"><div class="item-top"><h3>Payments &amp; disputes</h3><span class="tag">KES 482K this month</span></div><p>Review example transactions and payment status. Refund actions are not enabled.</p><span class="status review">Preview only</span></article>
+              <article class="market-item"><div class="item-top"><h3>Packages &amp; platform settings</h3><span class="tag">4 sample packages</span></div><p>Preview categories, counties, package configuration, reports, and security settings.</p><span class="status active">Preview only</span></article>
+            </div>
+          </div>`;
+        document.getElementById("secondaryPanel").innerHTML = `
+          <div class="panel">
+            <div class="panel-header"><h2>Recent activity</h2><span class="pill">Examples</span></div>
+            <div class="request-list">
+              <article class="request-item"><div class="item-top"><h3>New business submitted</h3><span class="status pending">Pending</span></div><p class="meta">Sample Business · Nairobi · 12 min ago</p></article>
+              <article class="request-item"><div class="item-top"><h3>Advert awaiting approval</h3><span class="status pending">Pending</span></div><p class="meta">Sample Property Listing · 38 min ago</p></article>
+              <article class="request-item"><div class="item-top"><h3>Payment received</h3><span class="status approved">Complete</span></div><p class="meta">KES 5,000 · Sample transaction · Today</p></article>
+              <article class="request-item"><div class="item-top"><h3>Platform report</h3><span class="status review">Preview</span></div><p class="meta">All values shown on this page are illustrative only.</p></article>
+            </div>
+          </div>`;
+        document.getElementById("secondaryPanel").insertAdjacentHTML("beforeend", `
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header">
+              <h2>Requests waiting for approval</h2>
+              <span class="pill" id="demoPendingCount">18 pending</span>
+            </div>
+            <p class="meta" style="margin-bottom:14px">Showing 12 of 18 sample requests. Approve/reject actions update the preview only; they do not change real submissions.</p>
+            <div class="request-list" id="demoPendingRequests"></div>
+            <a class="primary-btn" style="display:inline-flex;margin-top:18px" href="pages/login.html">Return to login</a>
+          </div>`);
+
+        const renderPendingRequests = () => {
+          const shownPendingCount = pendingRequests.filter(request => request.status === "Pending").length;
+          const totalPendingCount = pendingRequestsNotShown + shownPendingCount;
+          document.getElementById("demoPendingCount").textContent = `${totalPendingCount} pending`;
+          document.querySelector("#statsGrid .stat-card:nth-child(3) .value").textContent = totalPendingCount;
+          document.getElementById("demoPendingRequests").innerHTML = pendingRequests.map(request => `
+            <article class="request-item">
+              <div class="item-top">
+                <h3>${escapeHTML(request.name)}</h3>
+                <span class="status ${request.status.toLowerCase()}">${escapeHTML(request.status)}</span>
+              </div>
+              <p class="meta">${escapeHTML(request.type)} · ${escapeHTML(request.owner)} · ${escapeHTML(request.location)} · ${escapeHTML(request.age)}</p>
+              ${request.status === "Pending" ? `
+                <div class="actions">
+                  <button class="secondary-btn" type="button" data-demo-request-action="Approved" data-demo-request-id="${request.id}">Approve</button>
+                  <button class="ghost-btn" type="button" data-demo-request-action="Rejected" data-demo-request-id="${request.id}">Reject</button>
+                </div>` : ""}
+            </article>`).join("");
+        };
+
+        document.getElementById("demoPendingRequests").addEventListener("click", event => {
+          const button = event.target.closest("[data-demo-request-action]");
+          if (!button) return;
+
+          const request = pendingRequests.find(item => item.id === Number(button.dataset.demoRequestId));
+          if (!request || request.status !== "Pending") return;
+
+          request.status = button.dataset.demoRequestAction;
+          renderPendingRequests();
+        });
+
+        renderPendingRequests();
+      }
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        if (new URLSearchParams(window.location.search).get("demo") === "super-admin") {
+          window.location.href = "pages/login.html";
+          return;
+        }
+        clearSession();
+        window.location.href = "pages/login.html";
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        showPackagePromptIfNeeded();
+        if (new URLSearchParams(window.location.search).get("demo") === "super-admin") {
+          renderSuperAdminDemo();
+          return;
+        }
+
+        loadAuthenticatedUser().then(user => {
+          if (!user) {
+            clearSession();
+            window.location.href = "pages/login.html";
+            return;
+          }
+
+          authenticatedUser = user;
+          writeJson("gnk_user", user);
+          renderDashboard();
+        }).catch(error => {
+          document.getElementById("welcomeTitle").textContent = "Unable to load dashboard";
+          document.getElementById("dashboardIntro").textContent = error.message;
+        });
+      });
+    </script>
+  </body>
+</html>

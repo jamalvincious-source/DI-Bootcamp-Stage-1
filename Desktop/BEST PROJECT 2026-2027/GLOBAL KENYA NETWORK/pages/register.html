@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Account | Global Network Kenya</title>
+    <link rel="stylesheet" href="../style.css" />
+    <script src="../js/app.js" defer></script>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f5f8fc;
+        color: #172b4d;
+      }
+      .auth-shell {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 40px 20px;
+      }
+      .auth-card {
+        width: min(100%, 520px);
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        box-shadow: 0 12px 35px rgba(11, 59, 120, 0.08);
+        padding: 32px 28px;
+      }
+      .auth-header {
+        text-align: center;
+        margin-bottom: 28px;
+      }
+      .brand-mark {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 14px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #0b3b78, #1765b5);
+        color: white;
+        display: grid;
+        place-items: center;
+        font-size: 24px;
+        font-weight: 900;
+      }
+      .auth-header h1 {
+        font-size: clamp(1.8rem, 3vw, 2.4rem);
+        margin-bottom: 8px;
+      }
+      .auth-header p {
+        color: #64748b;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+      .form-group {
+        margin-bottom: 18px;
+      }
+      .form-group.full {
+        grid-column: 1 / -1;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 13px 14px;
+        border: 1px solid #d7e1ee;
+        border-radius: 10px;
+        background: #fff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      input:focus,
+      select:focus {
+        border-color: #1765b5;
+        box-shadow: 0 0 0 4px rgba(23, 101, 181, 0.1);
+        outline: none;
+      }
+      .btn {
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        background: #0b3b78;
+        color: white;
+        padding: 13px 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s ease, background 0.2s ease;
+      }
+      .btn:hover {
+        background: #1765b5;
+        transform: translateY(-1px);
+      }
+      .alt-link {
+        margin-top: 18px;
+        text-align: center;
+        color: #475569;
+      }
+      .alt-link a {
+        color: #0b3b78;
+        font-weight: 700;
+      }
+      .message {
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        display: none;
+      }
+      .message.error {
+        display: block;
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        color: #9f1239;
+      }
+      .message.success {
+        display: block;
+        background: #ecfdf5;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+      }
+      @media (max-width: 560px) {
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+        .auth-card {
+          padding: 24px 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-shell">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="brand-mark">G</div>
+          <h1>Create your account</h1>
+          <p>Join Global Network Kenya and start connecting</p>
+        </div>
+
+        <div id="messageBox" class="message" role="alert"></div>
+
+        <form id="registerForm" novalidate>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label for="registerName">Full name</label>
+              <input id="registerName" name="name" type="text" placeholder="Jane Doe" required />
+            </div>
+
+            <div class="form-group full">
+              <label for="registerEmail">Email address</label>
+              <input id="registerEmail" name="email" type="email" placeholder="you@example.com" required />
+            </div>
+
+            <div class="form-group full">
+              <label for="registerPhone">Mobile phone</label>
+              <input id="registerPhone" name="phone" type="tel" placeholder="0712345678" required />
+            </div>
+
+            <div class="form-group full">
+              <label for="registerPassword">Password</label>
+              <input id="registerPassword" name="password" type="password" placeholder="Minimum 8 characters" required />
+            </div>
+
+            <div class="form-group full">
+              <label for="registerRole">Account type</label>
+              <select id="registerRole" name="role">
+                <option value="user">User</option>
+                <option value="advertiser">Advertiser</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn" id="registerSubmitBtn">Create account</button>
+        </form>
+
+        <div class="alt-link">
+          Already have an account? <a href="login.html">Log in</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:3000/api";
+
+      function setMessage(text, type = "error") {
+        const box = document.getElementById("messageBox");
+        box.textContent = text;
+        box.className = `message ${type}`;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("registerForm");
+        const submitButton = document.getElementById("registerSubmitBtn");
+
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const name = document.getElementById("registerName").value.trim();
+          const email = document.getElementById("registerEmail").value.trim();
+          const phone = document.getElementById("registerPhone").value.trim();
+          const password = document.getElementById("registerPassword").value;
+          const role = document.getElementById("registerRole").value;
+
+          if (!name || !email || !phone || !password) {
+            setMessage("Please complete all fields before creating your account.", "error");
+            return;
+          }
+
+          if (!/^(?:\+254|254|0)7\d{8}$/.test(phone)) {
+            setMessage("Please enter a valid Kenyan mobile number, e.g. 0712345678.", "error");
+            return;
+          }
+
+          if (password.length < 8) {
+            setMessage("Password must be at least 8 characters long.", "error");
+            return;
+          }
+
+          submitButton.disabled = true;
+          submitButton.textContent = "Creating account...";
+          setMessage("");
+
+          try {
+            const response = await fetch(`${API_URL}/auth/register`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ name, email, phone, password, role })
+            });
+
+            const result = await response.json().catch(() => ({ message: "Invalid server response." }));
+
+            if (!response.ok) {
+              throw new Error(result.message || "Registration failed.");
+            }
+
+            window.location.href = "login.html?registered=1";
+          } catch (error) {
+            setMessage(error.message || "Unable to create account. Please try again.", "error");
+          } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Create account";
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
