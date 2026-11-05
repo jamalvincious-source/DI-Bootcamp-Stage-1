@@ -9,6 +9,7 @@ services:
     name: global-network-kenya-api
     runtime: node
     plan: free
+    rootDir: Desktop/BEST PROJECT 2026-2027/GLOBAL KENYA NETWORK
     buildCommand: npm ci --include=dev && npm run prisma:generate
     startCommand: npm run db:push && npm start
     healthCheckPath: /api/health
@@ -27,6 +28,7 @@ services:
   - type: web
     name: global-network-kenya-site
     runtime: static
+    rootDir: Desktop/BEST PROJECT 2026-2027/GLOBAL KENYA NETWORK
     buildCommand: npm run build
     staticPublishPath: dist
     envVars:
