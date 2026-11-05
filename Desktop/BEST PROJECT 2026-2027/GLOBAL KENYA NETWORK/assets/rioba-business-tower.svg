@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" role="img" aria-labelledby="title desc">
+  <title id="title">RIOBA demo campaign: thriving business district</title>
+  <desc id="desc">Illustration of modern Nairobi office towers glowing at sunrise, with an upward growth line.</desc>
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1">
+      <stop stop-color="#092b61"/>
+      <stop offset="1" stop-color="#2379a8"/>
+    </linearGradient>
+    <linearGradient id="tower" x2="0" y2="1">
+      <stop stop-color="#7edbe0"/>
+      <stop offset="1" stop-color="#17618b"/>
+    </linearGradient>
+    <radialGradient id="sun">
+      <stop stop-color="#fff5a8"/>
+      <stop offset=".45" stop-color="#ffd36c" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#ffd36c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="420" fill="url(#sky)"/>
+  <circle cx="542" cy="145" r="118" fill="url(#sun)"/>
+  <circle cx="542" cy="145" r="41" fill="#ffe89a"/>
+  <path d="M0 315 98 261l66 36 96-121 71 91 91-107 76 82 73-43 149 79v142H0Z" fill="#153d67" opacity=".8"/>
+  <path d="M42 420V225h106v195Zm120 0V142h134v278Zm148 0V191h96v229Zm111 0V112h115v308Zm131 0V221h116v199Z" fill="url(#tower)"/>
+  <g fill="#d9fbf2" opacity=".88">
+    <path d="M59 247h20v18H59zm42 0h20v18h-20zm-42 38h20v18H59zm42 0h20v18h-20z"/>
+    <path d="M183 169h26v20h-26zm48 0h26v20h-26zm-48 42h26v20h-26zm48 0h26v20h-26zm-48 42h26v20h-26zm48 0h26v20h-26zm-48 42h26v20h-26zm48 0h26v20h-26z"/>
+    <path d="M326 214h24v20h-24zm43 0h24v20h-24zm-43 43h24v20h-24zm43 0h24v20h-24z"/>
+    <path d="M474 140h24v20h-24zm44 0h24v20h-24zm-44 42h24v20h-24zm44 0h24v20h-24zm-44 42h24v20h-24zm44 0h24v20h-24zm-44 42h24v20h-24zm44 0h24v20h-24z"/>
+    <path d="M606 243h23v19h-23zm41 0h23v19h-23zm-41 41h23v19h-23zm41 0h23v19h-23z"/>
+  </g>
+  <path d="m88 210 166-57 105 27 134-91 100 19" fill="none" stroke="#ffe47a" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <path d="m572 95 25 12-19 21" fill="none" stroke="#ffe47a" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <rect x="28" y="28" width="145" height="47" rx="23" fill="#fff" fill-opacity=".12" stroke="#fff" stroke-opacity=".35"/>
+  <text x="100" y="59" fill="#fff" font-family="Arial,sans-serif" font-size="22" font-weight="700" text-anchor="middle" letter-spacing="3">RIOBA</text>
+</svg>

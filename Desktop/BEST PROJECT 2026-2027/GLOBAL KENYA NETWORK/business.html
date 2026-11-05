@@ -10,6 +10,7 @@
           content="Register and manage your business with Global Network Kenya.">
 
     <link rel="stylesheet" href="style.css">
+    <script src="js/app.js"></script>
 
     <style>
         :root {
@@ -342,14 +343,14 @@
 
 <header class="navbar">
     <nav class="nav-inner" aria-label="Main navigation">
-        <a class="logo" href="../index.html">
+        <a class="logo" href="index.html">
             Global Network Kenya
         </a>
 
         <div class="nav-links">
-            <a href="../index.html">Home</a>
-            <a href="businesses.html">Businesses</a>
-            <a href="packages.html">Packages</a>
+            <a href="index.html">Home</a>
+            <a href="pages/businesses.html">Businesses</a>
+            <a href="pages/packages.html">Packages</a>
             <a href="dashboard.html">Dashboard</a>
             <a href="#" id="logoutButton">Log out</a>
         </div>
@@ -396,17 +397,17 @@
                     <label for="category">Category *</label>
                     <select id="category" name="category" required>
                         <option value="">Select a category</option>
-                        <option value="Agriculture">Agriculture</option>
-                        <option value="Beauty">Beauty</option>
-                        <option value="Construction">Construction</option>
-                        <option value="Education">Education</option>
-                        <option value="Food">Food and Restaurants</option>
-                        <option value="Health">Health</option>
+                        <option value="Agriculture &amp; Farming">Agriculture &amp; Farming</option>
+                        <option value="Beauty &amp; Personal Care">Beauty &amp; Personal Care</option>
+                        <option value="Construction &amp; Home Services">Construction &amp; Home Services</option>
+                        <option value="Education &amp; Training">Education &amp; Training</option>
+                        <option value="Food &amp; Restaurants">Food and Restaurants</option>
+                        <option value="Healthcare &amp; Medical Services">Healthcare and Medical Services</option>
                         <option value="Real Estate">Real Estate</option>
-                        <option value="Retail">Retail and Shopping</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Tourism">Tourism and Hospitality</option>
-                        <option value="Transport">Transport</option>
+                        <option value="Retail &amp; Shopping">Retail and Shopping</option>
+                        <option value="Technology &amp; Electronics">Technology and Electronics</option>
+                        <option value="Tourism &amp; Hospitality">Tourism and Hospitality</option>
+                        <option value="Transport &amp; Logistics">Transport and Logistics</option>
                         <option value="Other">Other</option>
                     </select>
                 </div>
@@ -542,16 +543,6 @@
 <script>
 "use strict";
 
-/*
- * Backend and authentication configuration.
- * Keep these values consistent with login.html and app.js.
- */
-
-const API_BASE_URL = "http://localhost:3000/api";
-const TOKEN_KEY = "gnk_token";
-const USER_KEY = "gnk_user";
-const BUSINESS_REQUESTS_KEY = "gnk_business_requests";
-
 const form = document.getElementById("businessForm");
 const businessList = document.getElementById("businessList");
 const pageMessage = document.getElementById("pageMessage");
@@ -559,41 +550,6 @@ const submitButton = document.getElementById("submitButton");
 
 document.getElementById("currentYear").textContent =
     new Date().getFullYear();
-
-function getCookieValue(name) {
-    const cookieString = document.cookie || "";
-    const match = cookieString
-        .split(";")
-        .map((entry) => entry.trim())
-        .find((entry) => entry.startsWith(`${name}=`));
-
-    if (!match) {
-        return "";
-    }
-
-    return decodeURIComponent(match.split("=").slice(1).join("="));
-}
-
-function getToken() {
-    return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY) || getCookieValue(TOKEN_KEY);
-}
-
-function readLocalJson(key, fallback) {
-    try {
-        const rawValue = localStorage.getItem(key) || getCookieValue(key);
-        return rawValue ? JSON.parse(rawValue) : fallback;
-    } catch {
-        return fallback;
-    }
-}
-
-function writeLocalJson(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-}
-
-function getBusinessRequests() {
-    return readLocalJson(BUSINESS_REQUESTS_KEY, []);
-}
 
 function showMessage(message, type = "error") {
     pageMessage.textContent = message;
@@ -606,55 +562,17 @@ function clearMessage() {
 }
 
 async function apiRequest(endpoint, options = {}) {
-    const token = getToken();
-
-    const headers = {
-        ...(options.body ? { "Content-Type": "application/json" } : {}),
-        ...(options.headers || {})
-    };
-
-    if (token) {
-        headers.Authorization = `Bearer ${token}`;
-    }
-
-    let response;
-
     try {
-        response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            ...options,
-            headers
-        });
-    } catch {
-        throw new Error(
-            "Cannot connect to the backend. Make sure your server is running on port 3000."
-        );
+        return await window.GNK.apiRequest(endpoint, options);
+    } catch (error) {
+        if (error.status === 401) {
+            window.GNK.clearSession();
+            window.GNK.requireLogin();
+        }
+
+        throw error;
     }
 
-    let data;
-
-    try {
-        data = await response.json();
-    } catch {
-        throw new Error("The server returned an invalid response.");
-    }
-
-    if (response.status === 401) {
-        sessionStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(TOKEN_KEY);
-        sessionStorage.removeItem(USER_KEY);
-        localStorage.removeItem(USER_KEY);
-        document.cookie = `${USER_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
-        document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
-
-        window.location.href = "login.html";
-        throw new Error("Your session has expired. Please log in again.");
-    }
-
-    if (!response.ok || data.success === false) {
-        throw new Error(data.message || `Request failed (${response.status}).`);
-    }
-
-    return data;
 }
 
 function safeImageURL(value) {
@@ -677,14 +595,8 @@ function renderBusinesses(businesses) {
     businessList.replaceChildren();
 
     const allBusinesses = Array.isArray(businesses) ? businesses : [];
-    const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
-    const localRequests = getBusinessRequests().filter((request) => {
-        if (!currentUser) return false;
-        return request.user === currentUser.name || request.email === currentUser.email;
-    });
-
-    const mergedBusinesses = [...localRequests, ...allBusinesses].map((business) => ({
-        id: business.id || business.requestId || Date.now() + Math.random(),
+    const mergedBusinesses = allBusinesses.map((business) => ({
+        id: business.id,
         name: business.name || business.business,
         category: business.category || "General",
         county: business.county || "Kenya",
@@ -771,23 +683,13 @@ async function loadBusinesses() {
         const data = await apiRequest("/businesses/mine");
         renderBusinesses(data.businesses || []);
     } catch (error) {
-        const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
-        const localRequests = getBusinessRequests().filter((request) => {
-            if (!currentUser) return false;
-            return request.user === currentUser.name || request.email === currentUser.email;
-        });
-
-        if (localRequests.length) {
-            renderBusinesses(localRequests);
-            return;
-        }
-
         businessList.replaceChildren();
 
         const failure = document.createElement("div");
         failure.className = "empty-state";
-        failure.textContent = error.message;
+        failure.textContent = error.message || "Unable to load your businesses.";
         businessList.appendChild(failure);
+        showMessage(failure.textContent);
     }
 }
 
@@ -795,8 +697,8 @@ form.addEventListener("submit", async event => {
     event.preventDefault();
     clearMessage();
 
-    if (!getToken()) {
-        showMessage("Please log in before registering a business.");
+    if (!window.GNK.getToken()) {
+        window.GNK.requireLogin();
         return;
     }
 
@@ -834,23 +736,6 @@ form.addEventListener("submit", async event => {
             body: JSON.stringify(payload)
         });
 
-        const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
-        const requests = getBusinessRequests();
-        const submission = {
-            id: Date.now(),
-            user: currentUser?.name || "Customer",
-            email: currentUser?.email || "",
-            business: payload.name,
-            category: payload.category,
-            county: payload.county,
-            phone: payload.phone,
-            description: payload.description,
-            status: "Pending",
-            date: new Date().toISOString()
-        };
-
-        writeLocalJson(BUSINESS_REQUESTS_KEY, [submission, ...requests]);
-
         showMessage(
             data.message || "Business registered successfully. Await approval.",
             "success"
@@ -859,28 +744,7 @@ form.addEventListener("submit", async event => {
         form.reset();
         await loadBusinesses();
     } catch (error) {
-        const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
-        const requests = getBusinessRequests();
-        const fallbackSubmission = {
-            id: Date.now(),
-            user: currentUser?.name || "Customer",
-            email: currentUser?.email || "",
-            business: payload.name,
-            category: payload.category,
-            county: payload.county,
-            phone: payload.phone,
-            description: payload.description,
-            status: "Pending",
-            date: new Date().toISOString()
-        };
-
-        writeLocalJson(BUSINESS_REQUESTS_KEY, [fallbackSubmission, ...requests]);
-        showMessage(
-            "Business submitted for super admin approval. Your request is now awaiting review.",
-            "success"
-        );
-        form.reset();
-        await loadBusinesses();
+        showMessage(error.message || "Unable to submit the business. Please try again.");
     } finally {
         submitButton.disabled = false;
         submitButton.textContent = "Register Business";
@@ -897,20 +761,13 @@ document.getElementById("logoutButton").addEventListener(
     event => {
         event.preventDefault();
 
-        sessionStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(TOKEN_KEY);
-        sessionStorage.removeItem(USER_KEY);
-        localStorage.removeItem(USER_KEY);
-        document.cookie = `${USER_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
-        document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
-
-        window.location.href = "login.html";
+        window.GNK.logout();
     }
 );
 
 // Require an authenticated session before loading private business data.
-if (!getToken()) {
-    window.location.href = "login.html";
+if (!window.GNK.getToken()) {
+    window.GNK.requireLogin();
 } else {
     loadBusinesses();
 }

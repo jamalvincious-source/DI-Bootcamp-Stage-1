@@ -16,11 +16,40 @@
       .auth-shell {
         min-height: 100vh;
         display: grid;
-        place-items: center;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        align-items: center;
+        gap: clamp(24px, 5vw, 64px);
+        width: min(1120px, 100%);
+        margin: 0 auto;
         padding: 40px 20px;
       }
+      .auth-visual {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        min-width: 0;
+        min-height: 300px;
+        aspect-ratio: 1.4;
+        border-radius: 22px;
+        background: #082b57;
+        box-shadow: 0 24px 60px rgba(11, 59, 120, 0.2);
+        perspective: 1100px;
+      }
+      .auth-visual-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        animation: auth-image-swing 5.5s ease-in-out infinite alternate;
+        transform-origin: center;
+        will-change: transform;
+      }
+      @keyframes auth-image-swing {
+        from { transform: rotateY(-6deg) translateX(-5px) scale(1.06); }
+        to { transform: rotateY(6deg) translateX(5px) scale(1.06); }
+      }
       .auth-card {
-        width: min(100%, 460px);
+        width: 100%;
+        min-width: 0;
         background: #fff;
         border: 1px solid #e2e8f0;
         border-radius: 18px;
@@ -121,6 +150,50 @@
         height: 18px;
         margin: 0;
       }
+      .password-field {
+        position: relative;
+      }
+      .password-field input {
+        padding-right: 72px;
+      }
+      .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        transform: translateY(-50%);
+        border: 0;
+        background: transparent;
+        color: #0b3b78;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .forgot-password-link {
+        display: block;
+        margin: -4px 0 16px auto;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #0b3b78;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .recovery-panel[hidden] {
+        display: none;
+      }
+      .recovery-note {
+        margin: 0 0 18px;
+        color: #64748b;
+        font-size: 0.92rem;
+      }
+      .recovery-link[hidden] {
+        display: none;
+      }
+      .recovery-link {
+        margin-top: 14px;
+        text-decoration: none;
+        text-align: center;
+      }
       .alt-link {
         margin-top: 18px;
         text-align: center;
@@ -191,15 +264,38 @@
       .login-options[hidden] {
         display: none;
       }
+      @media (max-width: 760px) {
+        .auth-shell {
+          grid-template-columns: minmax(0, 1fr);
+          max-width: 560px;
+          gap: 20px;
+        }
+        .auth-visual {
+          min-height: 0;
+          aspect-ratio: 1.8;
+        }
+      }
       @media (max-width: 480px) {
         .auth-card {
           padding: 24px 18px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .auth-visual-image {
+          animation: none;
         }
       }
     </style>
   </head>
   <body>
     <div class="auth-shell">
+      <aside class="auth-visual">
+        <img
+          class="auth-visual-image"
+          src="../assets/global-network-kenya-brand.jpg"
+          alt="Global Network Kenya billboard connecting Kenya to the world"
+        />
+      </aside>
       <div class="auth-card">
         <div class="auth-header">
           <div class="brand-mark">G</div>
@@ -221,11 +317,19 @@
           </button>
           <button class="login-option" type="button" data-login-mode="super_admin">
             Log in as Super Admin
-            <span>Sign in with the Super Admin password configured for this site.</span>
+            <span>Sign in with the Super Admin email and password configured for this site.</span>
           </button>
           <a class="login-option" href="../dashboard.html?demo=super-admin">
             Preview Super Admin dashboard
             <span>Open the read-only sample preview without signing in. No real admin access.</span>
+          </a>
+          <a class="login-option" href="../dashboard.html?demo=user">
+            Sign in as Demo User
+            <span>Enter the sample user account without a password. This demo cannot access real accounts or data.</span>
+          </a>
+          <a class="login-option" href="../dashboard.html?demo=advertiser">
+            Sign in as Demo Advertiser
+            <span>Explore a sample advertiser dashboard without a password. Changes do not affect real accounts or adverts.</span>
           </a>
           <a class="btn" href="register.html">Sign up</a>
         </div>
@@ -240,7 +344,10 @@
 
           <div class="form-group">
             <label for="loginPassword">Password</label>
-            <input id="loginPassword" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+            <div class="password-field">
+              <input id="loginPassword" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+              <button id="togglePassword" class="password-toggle" type="button" aria-controls="loginPassword" aria-pressed="false">Show</button>
+            </div>
           </div>
 
           <div class="form-group remember-row">
@@ -250,15 +357,30 @@
             </label>
           </div>
 
+          <button id="forgotPasswordToggle" class="forgot-password-link" type="button">Forgot password?</button>
           <button type="submit" class="btn" id="loginSubmitBtn">Log In</button>
           <div class="alt-link">Need an account? <a href="register.html">Sign up</a></div>
         </form>
+
+        <section id="recoveryPanel" class="recovery-panel" hidden aria-labelledby="recoveryTitle">
+          <button id="backToLogin" class="back-button" type="button">← Back to sign in</button>
+          <h2 id="recoveryTitle">Reset your password</h2>
+          <p class="recovery-note">
+            Enter your account email. If it belongs to an active account, we will send a secure password reset link.
+          </p>
+          <form id="recoveryForm" novalidate>
+            <div class="form-group">
+              <label for="recoveryEmail">Account email</label>
+              <input id="recoveryEmail" name="email" type="email" placeholder="you@example.com" autocomplete="email" required />
+            </div>
+            <button type="submit" class="btn">Prepare reset request</button>
+          </form>
+          <p id="recoveryMessage" class="message" role="status" aria-live="polite"></p>
+        </section>
       </div>
     </div>
 
     <script>
-      const API_URL = "http://localhost:3000/api";
-
       function setMessage(text, type = "error") {
         const box = document.getElementById("messageBox");
         box.textContent = text;
@@ -292,16 +414,78 @@
         const submitButton = document.getElementById("loginSubmitBtn");
         const rememberMe = document.getElementById("rememberMe");
         const passwordInput = document.getElementById("loginPassword");
+        const recoveryPanel = document.getElementById("recoveryPanel");
+        const recoveryMessage = document.getElementById("recoveryMessage");
         const passwordGroup = passwordInput.closest(".form-group");
         const emailGroup = document.getElementById("loginEmail").closest(".form-group");
         const rememberGroup = rememberMe.closest(".form-group");
+        const forgotPasswordToggle = document.getElementById("forgotPasswordToggle");
         let loginMode = "";
+
+        document.getElementById("togglePassword").addEventListener("click", event => {
+          const toggle = event.currentTarget;
+          const isVisible = passwordInput.type === "text";
+          passwordInput.type = isVisible ? "password" : "text";
+          toggle.textContent = isVisible ? "Show" : "Hide";
+          toggle.setAttribute("aria-pressed", String(!isVisible));
+        });
+
+        document.getElementById("forgotPasswordToggle").addEventListener("click", () => {
+          form.hidden = true;
+          recoveryPanel.hidden = false;
+          document.getElementById("authTitle").textContent = "Forgot your password?";
+          document.getElementById("authSubtitle").textContent = "We can help you get back into your account.";
+          document.getElementById("recoveryEmail").value = document.getElementById("loginEmail").value.trim();
+          recoveryMessage.textContent = "";
+          recoveryMessage.className = "message";
+          document.getElementById("recoveryEmail").focus();
+        });
+
+        document.getElementById("backToLogin").addEventListener("click", () => {
+          recoveryPanel.hidden = true;
+          form.hidden = false;
+          document.getElementById("authTitle").textContent =
+            loginMode === "super_admin" ? "Super Admin Login" :
+              loginMode === "admin" ? "Admin Login" : "User Login";
+          document.getElementById("authSubtitle").textContent =
+            loginMode === "super_admin"
+              ? "Enter the Super Admin email address to receive a sign-in code."
+              : loginMode === "admin"
+                ? "Enter your administrator account email and password."
+                : "Enter your email and password to continue.";
+          document.getElementById("loginEmail").focus();
+        });
+
+        document.getElementById("recoveryForm").addEventListener("submit", async event => {
+          event.preventDefault();
+          const recoveryEmail = document.getElementById("recoveryEmail");
+          if (!recoveryEmail.reportValidity()) return;
+
+          const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+          submitButton.disabled = true;
+          recoveryMessage.textContent = "";
+          recoveryMessage.className = "message";
+          try {
+            const result = await window.GNK.apiRequest("/auth/forgot-password", {
+              method: "POST",
+              body: JSON.stringify({ email: recoveryEmail.value.trim() })
+            });
+            recoveryMessage.textContent = result.message;
+            recoveryMessage.className = "message success";
+          } catch (error) {
+            recoveryMessage.textContent = error.message || "Unable to request a password reset.";
+            recoveryMessage.className = "message error";
+          } finally {
+            submitButton.disabled = false;
+          }
+        });
 
         document.querySelectorAll("[data-login-mode]").forEach(button => {
           button.addEventListener("click", () => {
             loginMode = button.dataset.loginMode;
             options.hidden = true;
             form.hidden = false;
+            recoveryPanel.hidden = true;
             document.getElementById("authTitle").textContent =
               loginMode === "super_admin" ? "Super Admin Login" :
                 loginMode === "admin" ? "Admin Login" : "User Login";
@@ -317,14 +501,16 @@
             submitButton.textContent =
               loginMode === "super_admin" ? "Log In as Super Admin" :
                 loginMode === "admin" ? "Log In as Admin" : "Log In";
-            emailGroup.hidden = false;
-            document.getElementById("loginEmail").required = true;
+            passwordInput.type = "password";
             passwordInput.autocomplete = "current-password";
             passwordInput.placeholder = "Enter your password";
             passwordInput.value = "";
             passwordGroup.hidden = false;
             passwordInput.required = true;
+            emailGroup.hidden = false;
+            document.getElementById("loginEmail").required = true;
             rememberGroup.hidden = false;
+            forgotPasswordToggle.hidden = false;
             setMessage("");
             document.getElementById("loginEmail").focus();
           });
@@ -336,11 +522,14 @@
           options.hidden = false;
           emailGroup.hidden = false;
           document.getElementById("loginEmail").required = true;
+          passwordInput.type = "password";
           passwordInput.autocomplete = "current-password";
           passwordInput.placeholder = "Enter your password";
+          passwordInput.value = "";
           passwordGroup.hidden = false;
           passwordInput.required = true;
           rememberGroup.hidden = false;
+          forgotPasswordToggle.hidden = false;
           document.getElementById("authTitle").textContent = "Welcome";
           document.getElementById("authSubtitle").textContent = "Choose how you would like to continue";
           setMessage("");
@@ -351,7 +540,6 @@
 
           const email = document.getElementById("loginEmail").value.trim();
           const password = passwordInput.value;
-
           if (!email) {
             setMessage("Please enter your email address.", "error");
             return;
@@ -366,19 +554,10 @@
               throw new Error("Please enter your password.");
             }
 
-            const response = await fetch(`${API_URL}/auth/login`, {
+            const result = await window.GNK.apiRequest("/auth/login", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({ email, password })
+              body: JSON.stringify({ email, password, rememberMe: rememberMe.checked })
             });
-
-            const result = await response.json().catch(() => ({ message: "Invalid server response." }));
-
-            if (!response.ok) {
-              throw new Error(result.message || "Login failed.");
-            }
 
             if (loginMode === "super_admin" && result.user?.role !== "super_admin") {
               throw new Error("This account does not have Super Admin access.");
@@ -400,8 +579,8 @@
         });
 
         async function completeLogin(result) {
-          const { token, user } = result;
-          if (!token || !user) {
+          const { user } = result;
+          if (!user) {
             throw new Error("Authentication response was incomplete.");
           }
 
@@ -412,23 +591,20 @@
             throw new Error("This account does not have Admin access.");
           }
 
-          if (window.GNK && typeof window.GNK.saveSession === "function") {
-            window.GNK.saveSession(token, user, rememberMe.checked);
-          } else {
-            sessionStorage.setItem("gnk_token", token);
-            sessionStorage.setItem("gnk_user", JSON.stringify(user));
+          window.GNK.saveSession(user, rememberMe.checked);
 
-            if (rememberMe.checked) {
-              localStorage.setItem("gnk_token", token);
-              localStorage.setItem("gnk_user", JSON.stringify(user));
-              const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
-              document.cookie = `gnk_token=${encodeURIComponent(token)}; expires=${expires}; path=/; SameSite=Lax`;
-              document.cookie = `gnk_user=${encodeURIComponent(JSON.stringify(user))}; expires=${expires}; path=/; SameSite=Lax`;
-            } else {
-              localStorage.removeItem("gnk_token");
-              localStorage.removeItem("gnk_user");
-              document.cookie = "gnk_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax";
-              document.cookie = "gnk_user=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax";
+          const next = new URLSearchParams(window.location.search).get("next");
+          if (next && next.startsWith("/") && !next.startsWith("//")) {
+            const nextUrl = new URL(next, window.location.href);
+            const authPaths = ["/pages/login.html", "/pages/register.html"];
+            const isAuthPage = authPaths.some(path => nextUrl.pathname.endsWith(path));
+            if (
+              nextUrl.origin === window.location.origin &&
+              nextUrl.protocol === window.location.protocol &&
+              !isAuthPage
+            ) {
+              window.location.assign(nextUrl.href);
+              return;
             }
           }
 

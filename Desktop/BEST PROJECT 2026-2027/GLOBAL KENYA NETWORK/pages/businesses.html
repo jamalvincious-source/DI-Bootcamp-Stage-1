@@ -3,8 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Business Directory | Global Network Kenya</title>
+    <title>Marketplace &amp; Business Directory | Global Network Kenya</title>
     <link rel="stylesheet" href="../style.css" />
+    <script src="../js/app.js"></script>
     <style>
       :root {
         --gnk-blue: #0b3b78;
@@ -105,6 +106,149 @@
         grid-template-columns: 1.4fr 1fr 1fr auto;
         gap: 14px;
         align-items: center;
+      }
+
+      .marketplace-panel {
+        margin-top: 24px;
+        padding: 22px;
+        background: #fff;
+        border: 1px solid var(--gnk-border);
+        border-radius: 18px;
+        box-shadow: var(--gnk-shadow);
+      }
+
+      .marketplace-heading,
+      .range-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .marketplace-heading h2 {
+        margin: 0;
+        font-size: 1.45rem;
+      }
+
+      .marketplace-heading p {
+        margin: 5px 0 18px;
+        color: var(--gnk-muted);
+      }
+
+      .listing-filters {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr 1fr 1fr;
+        gap: 16px;
+        align-items: end;
+        padding: 16px;
+        border-radius: 14px;
+        background: #f7faff;
+      }
+
+      .listing-filters label,
+      .range-control label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 0.84rem;
+        font-weight: 700;
+      }
+
+      .range-control {
+        grid-column: span 2;
+      }
+
+      .range-pair {
+        display: grid;
+        gap: 2px;
+      }
+
+      .range-pair input,
+      .listing-filters input[type="range"] {
+        width: 100%;
+        accent-color: var(--gnk-blue);
+      }
+
+      .range-value {
+        color: var(--gnk-blue);
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      .listing-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 20px;
+      }
+
+      .listing-card {
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--gnk-border);
+        border-radius: 16px;
+      }
+
+      .listing-card img {
+        display: block;
+        width: 100%;
+        height: 190px;
+        object-fit: cover;
+        background: #edf4ff;
+      }
+
+      .listing-card-body {
+        padding: 16px;
+      }
+
+      .listing-card h3 {
+        margin: 8px 0;
+        font-size: 1.05rem;
+      }
+
+      .listing-price {
+        color: var(--gnk-blue);
+        font-size: 1.1rem;
+        font-weight: 900;
+      }
+
+      .listing-meta {
+        margin: 8px 0;
+        color: var(--gnk-muted);
+        font-size: 0.83rem;
+      }
+
+      .listing-card p {
+        min-height: 48px;
+        margin: 10px 0;
+        color: #475467;
+        font-size: 0.9rem;
+      }
+
+      .listing-contact {
+        display: inline-flex;
+        align-items: center;
+        padding: 9px 13px;
+        border-radius: 9px;
+        background: var(--gnk-blue);
+        color: #fff;
+        font-size: 0.85rem;
+        font-weight: 700;
+      }
+
+      .listing-contact:hover {
+        color: #fff;
+        background: var(--gnk-blue-strong);
+      }
+
+      .listing-status {
+        min-height: 48px;
+        grid-column: 1 / -1;
+        padding: 16px;
+        border: 1px dashed var(--gnk-border);
+        border-radius: 12px;
+        color: var(--gnk-muted);
+        text-align: center;
       }
 
       .field {
@@ -305,18 +449,32 @@
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
+        .listing-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .toolbar-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .listing-filters {
           grid-template-columns: 1fr 1fr;
         }
       }
 
       @media (max-width: 640px) {
-        .business-grid {
+        .business-grid,
+        .listing-grid {
           grid-template-columns: 1fr;
         }
 
-        .toolbar-grid {
+        .toolbar-grid,
+        .listing-filters {
           grid-template-columns: 1fr;
+        }
+
+        .range-control {
+          grid-column: auto;
         }
       }
     </style>
@@ -358,7 +516,7 @@
             <option value="Technology & Electronics">Technology &amp; Electronics</option>
             <option value="Transport & Logistics">Transport &amp; Logistics</option>
             <option value="Tourism & Hospitality">Tourism &amp; Hospitality</option>
-            <option value="Other Businesses">Other Businesses</option>
+            <option value="Other">Other Businesses</option>
           </select>
 
           <select id="countyFilter" class="field" aria-label="Select county">
@@ -391,7 +549,89 @@
           <button class="tab-btn" type="button" data-category="Technology & Electronics">Technology &amp; Electronics</button>
           <button class="tab-btn" type="button" data-category="Transport & Logistics">Transport &amp; Logistics</button>
           <button class="tab-btn" type="button" data-category="Tourism & Hospitality">Tourism &amp; Hospitality</button>
-          <button class="tab-btn" type="button" data-category="Other Businesses">Other Businesses</button>
+          <button class="tab-btn" type="button" data-category="Other">Other Businesses</button>
+        </div>
+      </section>
+
+      <section class="marketplace-panel" aria-labelledby="marketplaceTitle">
+        <div class="marketplace-heading">
+          <div>
+            <h2 id="marketplaceTitle">Marketplace listings</h2>
+            <p>Browse seller listings by price, date posted and item condition.</p>
+          </div>
+          <a class="primary-btn" href="../dashboard.html">Sell an item</a>
+        </div>
+
+        <div class="listing-filters" aria-label="Marketplace filters">
+          <div>
+            <label for="listingSearch">Search listings</label>
+            <input id="listingSearch" class="field" type="search" placeholder="Item, category or county" />
+          </div>
+          <div>
+            <label for="listingCategory">Category</label>
+            <select id="listingCategory" class="field">
+              <option value="">All categories</option>
+              <option>Agriculture &amp; Farming</option>
+              <option>Food &amp; Restaurants</option>
+              <option>Beauty &amp; Personal Care</option>
+              <option>Construction &amp; Home Services</option>
+              <option>Education &amp; Training</option>
+              <option>Healthcare &amp; Medical Services</option>
+              <option>Real Estate</option>
+              <option>Retail &amp; Shopping</option>
+              <option>Technology &amp; Electronics</option>
+              <option>Transport &amp; Logistics</option>
+              <option>Tourism &amp; Hospitality</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="listingCondition">Condition</label>
+            <select id="listingCondition" class="field">
+              <option value="">Any condition</option>
+              <option>New</option>
+              <option>Like new</option>
+              <option>Good</option>
+              <option>Fair</option>
+              <option>Refurbished</option>
+            </select>
+          </div>
+          <div>
+            <label for="listingSort">Sort listings</label>
+            <select id="listingSort" class="field">
+              <option value="newest">Newest first</option>
+              <option value="price_asc">Price: low to high</option>
+              <option value="price_desc">Price: high to low</option>
+            </select>
+          </div>
+          <div class="range-control">
+            <div class="range-heading">
+              <label>Price range (KES)</label>
+              <span id="priceRangeValue" class="range-value" aria-live="polite"></span>
+            </div>
+            <div class="range-pair">
+              <label for="minPriceRange">Minimum price</label>
+              <input id="minPriceRange" type="range" min="0" max="100000" value="0" step="500" />
+              <label for="maxPriceRange">Maximum price</label>
+              <input id="maxPriceRange" type="range" min="0" max="100000" value="100000" step="500" />
+            </div>
+          </div>
+          <div class="range-control">
+            <div class="range-heading">
+              <label for="listingDays">Date posted</label>
+              <span id="listingDaysValue" class="range-value" aria-live="polite">Any time</span>
+            </div>
+            <input id="listingDays" type="range" min="0" max="365" value="0" step="1" />
+            <div class="range-heading"><span>Any time</span><span>Past year</span></div>
+          </div>
+        </div>
+
+        <div class="results-head">
+          <h2>Items for sale</h2>
+          <span id="listingResultCount" aria-live="polite">Loading listings…</span>
+        </div>
+        <div id="marketplaceList" class="listing-grid" aria-live="polite">
+          <div class="listing-status">Loading marketplace listings…</div>
         </div>
       </section>
 
@@ -409,104 +649,9 @@
     </a>
 
     <script>
-      const businesses = [
-        {
-          name: "NiaTech Digital",
-          category: "Technology & Electronics",
-          county: "Nairobi",
-          phone: "0118237749",
-          description: "Website design, software development, branding and digital growth for startups and SMEs.",
-          image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "Green Valley Fresh",
-          category: "Food & Restaurants",
-          county: "Nakuru",
-          phone: "0118237749",
-          description: "Fresh produce, groceries and farm-to-table food delivery for homes and offices.",
-          image: "https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "Luna Moda House",
-          category: "Beauty & Personal Care",
-          county: "Mombasa",
-          phone: "0118237749",
-          description: "Modern fashion, accessories and tailoring for everyday and event wear.",
-          image: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "WellCare Clinic",
-          category: "Healthcare & Medical Services",
-          county: "Kiambu",
-          phone: "0118237749",
-          description: "Family medicine, wellness checkups and community health support services.",
-          image: "https://images.unsplash.com/photo-1538108149393-fbbd818959ec?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "Bright Path Academy",
-          category: "Education & Training",
-          county: "Kisumu",
-          phone: "0118237749",
-          description: "STEM learning, coaching and youth development programs with practical experiences.",
-          image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "SwiftRide Logistics",
-          category: "Transport & Logistics",
-          county: "Nairobi",
-          phone: "0118237749",
-          description: "Courier, parcel delivery and local transport for businesses and households.",
-          image: "https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "Mile High Mart",
-          category: "Retail & Shopping",
-          county: "Machakos",
-          phone: "0118237749",
-          description: "Daily essentials, household products and value shopping for local families.",
-          image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "Stone & Steel Build",
-          category: "Construction & Home Services",
-          county: "Nyeri",
-          phone: "0118237749",
-          description: "Residential and commercial construction, finishing and renovation services.",
-          image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "Glow Studio Kenya",
-          category: "Beauty & Personal Care",
-          county: "Mombasa",
-          phone: "0118237749",
-          description: "Hair styling, skincare, spa packages and personal grooming for every occasion.",
-          image: "https://images.unsplash.com/photo-1521590832167-7ae2f8c7c4dc?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "Kenya Connect Ventures",
-          category: "Other Businesses",
-          county: "Kakamega",
-          phone: "0118237749",
-          description: "Business consulting, community outreach and support services for local enterprise growth.",
-          image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "Sunrise Agro Growers",
-          category: "Agriculture & Farming",
-          county: "Nakuru",
-          phone: "0118237749",
-          description: "Crop production, farm inputs, and agricultural support for growers and agri-businesses.",
-          image: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=900&q=80"
-        },
-        {
-          name: "Blue Haven Suites",
-          category: "Tourism & Hospitality",
-          county: "Mombasa",
-          phone: "0118237749",
-          description: "Boutique stays, hotel bookings and hospitality experiences for visitors and travelers.",
-          image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80"
-        }
-      ];
+      let businesses = [];
+      let businessTotal = 0;
+      let businessRequestId = 0;
 
       const listEl = document.getElementById("businessList");
       const searchInput = document.getElementById("searchInput");
@@ -514,6 +659,161 @@
       const countyFilter = document.getElementById("countyFilter");
       const resultCount = document.getElementById("resultCount");
       const tabs = document.querySelectorAll(".tab-btn");
+      const listingFilterElements = {
+        search: document.getElementById("listingSearch"),
+        category: document.getElementById("listingCategory"),
+        condition: document.getElementById("listingCondition"),
+        sort: document.getElementById("listingSort"),
+        minPrice: document.getElementById("minPriceRange"),
+        maxPrice: document.getElementById("maxPriceRange"),
+        days: document.getElementById("listingDays")
+      };
+      const marketplaceList = document.getElementById("marketplaceList");
+      const listingResultCount = document.getElementById("listingResultCount");
+      const priceRangeValue = document.getElementById("priceRangeValue");
+      const listingDaysValue = document.getElementById("listingDaysValue");
+      let listingMaximumPrice = 100000;
+      const listingMaxPriceParamSet = new URLSearchParams(window.location.search).has("marketMaxPrice");
+      let listingPriceBoundsLoaded = false;
+      let listingRequestTimer;
+      let listingRequestId = 0;
+
+      function escapeListingText(value) {
+        return String(value ?? "").replace(/[&<>"']/g, character => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        })[character]);
+      }
+
+      function formatListingPrice(value) {
+        return new Intl.NumberFormat("en-KE", {
+          style: "currency",
+          currency: "KES",
+          maximumFractionDigits: 0
+        }).format(Number(value) || 0);
+      }
+
+      function formatListingDate(value) {
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? "Date unavailable" : date.toLocaleDateString("en-KE", {
+          day: "numeric", month: "short", year: "numeric"
+        });
+      }
+
+      function updateMarketplaceLabels() {
+        const min = Number(listingFilterElements.minPrice.value);
+        const max = Number(listingFilterElements.maxPrice.value);
+        priceRangeValue.textContent = `${formatListingPrice(min)} – ${formatListingPrice(max)}`;
+        const days = Number(listingFilterElements.days.value);
+        listingDaysValue.textContent = days === 0 ? "Any time" : `Past ${days} day${days === 1 ? "" : "s"}`;
+      }
+
+      function renderMarketplaceListings(listings) {
+        listingResultCount.textContent = `${listings.length} listing${listings.length === 1 ? "" : "s"}`;
+        if (!listings.length) {
+          const filters = listingFilterElements;
+          const hasFilters = filters.search.value.trim() ||
+            filters.category.value ||
+            filters.condition.value ||
+            Number(filters.minPrice.value) > 0 ||
+            Number(filters.maxPrice.value) < listingMaximumPrice ||
+            Number(filters.days.value) > 0;
+          marketplaceList.innerHTML = hasFilters
+            ? '<div class="listing-status">No listings match these filters. Try a wider price range or a different condition.</div>'
+            : '<div class="listing-status">No seller listings have been published yet. Approved items will appear here when sellers start posting.</div>';
+          return;
+        }
+
+        marketplaceList.innerHTML = listings.map(listing => {
+          const imageUrl = listing.imageUrl && /^https?:\/\//i.test(listing.imageUrl)
+            ? listing.imageUrl
+            : "";
+          const phone = String(listing.seller?.phone || "").replace(/\D/g, "");
+          const contactUrl = phone
+            ? `https://wa.me/${phone.startsWith("254") ? phone : phone.startsWith("0") ? `254${phone.slice(1)}` : phone}`
+            : "";
+          return `
+            <article class="listing-card">
+              ${imageUrl ? `<img src="${escapeListingText(imageUrl)}" alt="${escapeListingText(listing.title)}" loading="lazy">` : '<div class="listing-status">Seller has not added a photo</div>'}
+              <div class="listing-card-body">
+                <span class="tag">${escapeListingText(listing.category)}</span>
+                <h3>${escapeListingText(listing.title)}</h3>
+                <div class="listing-price">${formatListingPrice(listing.price)}</div>
+                <div class="listing-meta">${escapeListingText(listing.condition)} · ${escapeListingText(listing.county)} · Posted ${formatListingDate(listing.createdAt)}</div>
+                <p>${escapeListingText(listing.description)}</p>
+                <div class="listing-meta">Seller: ${escapeListingText(listing.seller?.name || "Global Network seller")}</div>
+                ${contactUrl
+                  ? `<a class="listing-contact" href="${contactUrl}" target="_blank" rel="noopener noreferrer">Contact seller</a>`
+                  : '<span class="listing-meta">Seller has not provided a public phone number.</span>'}
+              </div>
+            </article>
+          `;
+        }).join("");
+      }
+
+      async function loadMarketplaceListings() {
+        const filters = listingFilterElements;
+        const params = new URLSearchParams();
+        const search = filters.search.value.trim();
+        const category = filters.category.value;
+        const condition = filters.condition.value;
+        const minPrice = Number(filters.minPrice.value);
+        const maxPrice = Number(filters.maxPrice.value);
+        const days = Number(filters.days.value);
+
+        if (search) params.set("marketQ", search);
+        if (category) params.set("marketCategory", category);
+        if (condition) params.set("marketCondition", condition);
+        if (minPrice > 0) params.set("marketMinPrice", String(minPrice));
+        if (maxPrice < listingMaximumPrice || (!listingPriceBoundsLoaded && listingMaxPriceParamSet)) {
+          params.set("marketMaxPrice", String(maxPrice));
+        }
+        if (days > 0) params.set("marketDays", String(days));
+        params.set("marketSort", filters.sort.value);
+        const nextUrl = new URL(window.location.href);
+        for (const key of ["marketQ", "marketCategory", "marketCondition", "marketMinPrice", "marketMaxPrice", "marketDays", "marketSort"]) {
+          nextUrl.searchParams.delete(key);
+        }
+        for (const [key, value] of params) nextUrl.searchParams.set(key, value);
+        window.history.replaceState({}, "", nextUrl.pathname + nextUrl.search);
+
+        const requestId = ++listingRequestId;
+        marketplaceList.innerHTML = '<div class="listing-status">Loading marketplace listings…</div>';
+        try {
+          const apiParams = new URLSearchParams();
+          if (search) apiParams.set("q", search);
+          if (category) apiParams.set("category", category);
+          if (condition) apiParams.set("condition", condition);
+          if (minPrice > 0) apiParams.set("minPrice", String(minPrice));
+          if (maxPrice < listingMaximumPrice || (!listingPriceBoundsLoaded && listingMaxPriceParamSet)) {
+            apiParams.set("maxPrice", String(maxPrice));
+          }
+          if (days > 0) apiParams.set("days", String(days));
+          apiParams.set("sort", filters.sort.value);
+          const response = await window.GNK.apiRequest(`/listings?${apiParams}`);
+          if (requestId !== listingRequestId) return;
+          listingMaximumPrice = Math.max(1000, Math.ceil(response.priceBounds?.max || 100000));
+          for (const range of [filters.minPrice, filters.maxPrice]) range.max = String(listingMaximumPrice);
+          filters.maxPrice.step = String(Math.max(100, Math.round(listingMaximumPrice / 200)));
+          filters.minPrice.step = filters.maxPrice.step;
+          if (Number(filters.maxPrice.value) > listingMaximumPrice ||
+              (!listingPriceBoundsLoaded && !listingMaxPriceParamSet && filters.maxPrice.value === "100000")) {
+            filters.maxPrice.value = String(listingMaximumPrice);
+          }
+          listingPriceBoundsLoaded = true;
+          updateMarketplaceLabels();
+          renderMarketplaceListings(response.listings || []);
+        } catch (error) {
+          if (requestId !== listingRequestId) return;
+          listingResultCount.textContent = "Could not load listings";
+          marketplaceList.innerHTML = `<div class="listing-status">${escapeListingText(error.message)}</div>`;
+        }
+      }
+
+      function scheduleMarketplaceLoad() {
+        updateMarketplaceLabels();
+        window.clearTimeout(listingRequestTimer);
+        listingRequestTimer = window.setTimeout(loadMarketplaceListings, 180);
+      }
 
       function getCurrentFilters() {
         const params = new URLSearchParams(window.location.search);
@@ -550,34 +850,66 @@
           return matchesQuery && matchesCategory && matchesCounty;
         });
 
-        resultCount.textContent = `${filtered.length} result${filtered.length === 1 ? "" : "s"}`;
+        resultCount.textContent = `${businessTotal} result${businessTotal === 1 ? "" : "s"}`;
 
         if (!filtered.length) {
+          const hasFilters = searchInput.value.trim() || categoryFilter.value || countyFilter.value;
           listEl.innerHTML = `
             <div class="empty-state" style="grid-column: 1 / -1;">
-              No businesses match this search. Try another category or county.
+              ${hasFilters
+                ? "No businesses match this search. Try another category or county."
+                : "No published businesses yet. Be among the first to add one."}
             </div>
           `;
           return;
         }
 
-        listEl.innerHTML = filtered.map((business) => `
-          <article class="business-card">
-            <img src="${business.image}" alt="${business.name}" />
-            <div class="business-body">
-              <div class="business-top">
-                <h3>${business.name}</h3>
-                <span class="tag">${business.category}</span>
+        listEl.innerHTML = filtered.map((business) => {
+          const imageUrl = business.imageUrl || business.image_url || business.image || "";
+          const safeImage = /^https?:\/\//i.test(imageUrl) ? escapeListingText(imageUrl) : "";
+          const phone = String(business.phone || "").replace(/[^\d+]/g, "");
+          const contactLink = phone
+            ? `<a class="ghost-link" href="tel:${escapeListingText(phone)}">Contact business</a>`
+            : "";
+          return `
+            <article class="business-card">
+              ${safeImage ? `<img src="${safeImage}" alt="${escapeListingText(business.name)}" loading="lazy" />` : ""}
+              <div class="business-body">
+                <div class="business-top">
+                  <h3>${escapeListingText(business.name)}</h3>
+                  <span class="tag">${escapeListingText(business.category)}</span>
+                </div>
+                <p class="meta">${escapeListingText(business.county)}${phone ? ` · ${escapeListingText(phone)}` : ""}</p>
+                <p>${escapeListingText(business.description)}</p>
+                <div class="business-footer">
+                  <span class="status active">Published</span>
+                  ${contactLink}
+                </div>
               </div>
-              <p class="meta">${business.county} · ${business.phone}</p>
-              <p>${business.description}</p>
-              <div class="business-footer">
-                <span class="status active">Open to clients</span>
-                <a class="ghost-link" href="../business.html">View business</a>
-              </div>
-            </div>
-          </article>
-        `).join("");
+            </article>
+          `;
+        }).join("");
+      }
+
+      async function loadBusinesses() {
+        const params = new URLSearchParams();
+        const requestId = ++businessRequestId;
+        if (searchInput.value.trim()) params.set("search", searchInput.value.trim());
+        if (categoryFilter.value) params.set("category", categoryFilter.value);
+        if (countyFilter.value) params.set("county", countyFilter.value);
+        params.set("limit", "50");
+        listEl.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">Loading businesses…</div>';
+        try {
+          const response = await window.GNK.apiRequest(`/businesses?${params}`);
+          if (requestId !== businessRequestId) return;
+          businesses = Array.isArray(response.businesses) ? response.businesses : [];
+          businessTotal = Number(response.total) || businesses.length;
+          renderBusinesses();
+        } catch (error) {
+          if (requestId !== businessRequestId) return;
+          resultCount.textContent = "Could not load businesses";
+          listEl.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">${escapeListingText(error.message)}</div>`;
+        }
       }
 
       function syncFromUrl() {
@@ -598,7 +930,8 @@
       }
 
       function updateUrl() {
-        const params = new URLSearchParams();
+        const params = new URLSearchParams(window.location.search);
+        for (const key of ["search", "category", "county"]) params.delete(key);
         const query = (searchInput.value || "").trim();
         const category = categoryFilter.value || "";
         const county = countyFilter.value || "";
@@ -614,13 +947,13 @@
 
       document.getElementById("searchButton").addEventListener("click", () => {
         updateUrl();
-        renderBusinesses();
+        loadBusinesses();
       });
 
       searchInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
           updateUrl();
-          renderBusinesses();
+          loadBusinesses();
         }
       });
 
@@ -628,12 +961,12 @@
         const selected = categoryFilter.value || "";
         applyTabState(selected);
         updateUrl();
-        renderBusinesses();
+        loadBusinesses();
       });
 
       countyFilter.addEventListener("change", () => {
         updateUrl();
-        renderBusinesses();
+        loadBusinesses();
       });
 
       tabs.forEach((button) => {
@@ -642,11 +975,52 @@
           categoryFilter.value = selected;
           applyTabState(selected);
           updateUrl();
-          renderBusinesses();
+          loadBusinesses();
         });
       });
 
+      for (const element of Object.values(listingFilterElements)) {
+        element.addEventListener("input", () => {
+          if (element === listingFilterElements.minPrice &&
+              Number(element.value) > Number(listingFilterElements.maxPrice.value)) {
+            listingFilterElements.maxPrice.value = element.value;
+          }
+          if (element === listingFilterElements.maxPrice &&
+              Number(element.value) < Number(listingFilterElements.minPrice.value)) {
+            listingFilterElements.minPrice.value = element.value;
+          }
+          scheduleMarketplaceLoad();
+        });
+        element.addEventListener("change", scheduleMarketplaceLoad);
+      }
+
       syncFromUrl();
+      const listingParams = new URLSearchParams(window.location.search);
+      for (const [key, element] of [
+        ["marketQ", listingFilterElements.search],
+        ["marketCategory", listingFilterElements.category],
+        ["marketCondition", listingFilterElements.condition],
+        ["marketSort", listingFilterElements.sort],
+        ["marketMinPrice", listingFilterElements.minPrice],
+        ["marketMaxPrice", listingFilterElements.maxPrice],
+        ["marketDays", listingFilterElements.days]
+      ]) {
+        const value = listingParams.get(key);
+        if (value !== null) {
+          if (element === listingFilterElements.minPrice || element === listingFilterElements.maxPrice) {
+            const requestedMax = Number(value);
+            if (Number.isFinite(requestedMax)) {
+              for (const range of [listingFilterElements.minPrice, listingFilterElements.maxPrice]) {
+                if (requestedMax > Number(range.max)) range.max = String(requestedMax);
+              }
+            }
+          }
+          element.value = value;
+        }
+      }
+      updateMarketplaceLabels();
+      loadMarketplaceListings();
+      loadBusinesses();
     </script>
   </body>
 </html>

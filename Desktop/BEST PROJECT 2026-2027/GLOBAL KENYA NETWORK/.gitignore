@@ -1,3 +1,4 @@
+
 /.env
 /.env.*
 !/.env.example
@@ -7,3 +8,17 @@ node_modules/
 *.db
 *.sqlite
 *.sqlite3
+node_modules/
+.env
+.env.*
+!.env.example
+
+*.db
+*.sqlite
+*.sqlite3
+
+coverage/
+dist/
+build/
+npm-debug.log*
+.DS_Store

@@ -260,7 +260,7 @@
         </p>
       </section>
 
-      <section class="packages-grid" aria-label="Package options">
+      <section id="packagesGrid" class="packages-grid" aria-label="Package options" aria-live="polite">
         <article class="package-card">
           <img src="https://miro.medium.com/v2/resize:fit:1400/1*Gy9UXS5GQBFI9hVLIJK9Tg.png?utm_source=chatgpt.com" alt="Standard package business directory listing example" />
           <div class="package-body">
@@ -273,7 +273,7 @@
               <li>Contact details</li>
               <li>Description and one image</li>
             </ul>
-            <a class="cta package-button" href="login.html?package=standard" data-package="standard" data-package-name="Standard Package">Choose Standard</a>
+            <a class="cta package-button" href="checkout.html?placement=standard" data-package="standard" data-package-name="Standard Package">Choose Standard</a>
           </div>
         </article>
 
@@ -289,7 +289,7 @@
               <li>Highlighted listing</li>
               <li>Placement in featured sections</li>
             </ul>
-            <a class="cta secondary package-button" href="login.html?package=featured" data-package="featured" data-package-name="Featured Package">Choose Featured</a>
+            <a class="cta secondary package-button" href="checkout.html?placement=featured" data-package="featured" data-package-name="Featured Package">Choose Featured</a>
           </div>
         </article>
 
@@ -305,13 +305,13 @@
               <li>Promotional image</li>
               <li>Link to the advertised business</li>
             </ul>
-            <a class="cta package-button" href="login.html?package=banner" data-package="banner" data-package-name="Premium Banner Package">Choose Premium</a>
+            <a class="cta package-button" href="checkout.html?placement=banner" data-package="banner" data-package-name="Premium Banner Package">Choose Premium</a>
           </div>
         </article>
       </section>
 
       <div class="notes">
-        These prices are suggested starting prices, not verified market rates. The linked images are third-party examples and should be checked for usage permission before commercial use.
+        Package prices are loaded from the Global Network Kenya database. Advert submissions and pending payment requests are saved to your account; online payment collection is not enabled yet.
       </div>
     </main>
 
@@ -319,5 +319,86 @@
       <span>Contact Me</span>
       <strong>0118237749</strong>
     </a>
+    <script src="../js/app.js"></script>
+    <script>
+      const packagesGrid = document.getElementById("packagesGrid");
+
+      function showPackageLoadError(message) {
+        packagesGrid.replaceChildren();
+        const notice = document.createElement("p");
+        notice.className = "notes";
+        notice.setAttribute("role", "status");
+        notice.textContent = message;
+        packagesGrid.appendChild(notice);
+      }
+
+      async function loadPackages() {
+        try {
+          const response = await window.GNK.apiRequest("/packages");
+          packagesGrid.replaceChildren();
+
+          if (!Array.isArray(response.packages) || response.packages.length === 0) {
+            showPackageLoadError("No advertising packages are available right now.");
+            return;
+          }
+
+          for (const item of response.packages) {
+            const card = document.createElement("article");
+            card.className = "package-card";
+
+            const body = document.createElement("div");
+            body.className = "package-body";
+
+            const badge = document.createElement("span");
+            badge.className = "package-badge";
+            badge.textContent = item.placement;
+
+            const title = document.createElement("h2");
+            title.textContent = item.name;
+
+            const price = document.createElement("div");
+            price.className = "price";
+            price.textContent = `${new Intl.NumberFormat("en-KE", {
+              style: "currency",
+              currency: item.currency || "KES",
+              maximumFractionDigits: 0
+            }).format(item.price)} / ${item.durationDays} days`;
+
+            const description = document.createElement("p");
+            description.textContent = item.description || "";
+
+            const features = document.createElement("ul");
+            features.className = "features";
+            let featureList;
+            try {
+              featureList = JSON.parse(item.features || "[]");
+            } catch (error) {
+              throw new Error(`The ${item.name} package has invalid feature data.`, { cause: error });
+            }
+            if (!Array.isArray(featureList) || featureList.some(feature => typeof feature !== "string")) {
+              throw new Error(`The ${item.name} package has invalid feature data.`);
+            }
+            for (const feature of featureList) {
+              const entry = document.createElement("li");
+              entry.textContent = feature;
+              features.appendChild(entry);
+            }
+
+            const choose = document.createElement("a");
+            choose.className = "cta package-button";
+            choose.href = `checkout.html?packageId=${encodeURIComponent(item.id)}`;
+            choose.textContent = `Choose ${item.name}`;
+
+            body.append(badge, title, price, description, features, choose);
+            card.appendChild(body);
+            packagesGrid.appendChild(card);
+          }
+        } catch (error) {
+          showPackageLoadError(error.message || "Unable to load advertising packages.");
+        }
+      }
+
+      loadPackages();
+    </script>
   </body>
 </html>

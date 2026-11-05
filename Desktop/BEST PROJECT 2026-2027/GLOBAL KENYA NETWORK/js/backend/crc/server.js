@@ -1,136 +1,176 @@
+
 "use strict";
 
-require("dotenv").config();
+const path = require("path");
 
-const bcrypt = require("bcrypt");
-const { z } = require("zod");
-const app = require("./app");
-const { connectDatabase, prisma } = require("./config/database");
-
-const PORT = Number(process.env.PORT) || 3000;
-const HOST = process.env.HOST || "localhost";
-const BCRYPT_ROUNDS = 12;
-
-const superAdminSchema = z.object({
-    name: z.string().trim().min(2).max(100),
-    email: z.string().trim().email().max(254),
-    password: z.string().min(12).refine(
-        password => Buffer.byteLength(password, "utf8") <= 72,
-        "Password must not exceed 72 UTF-8 bytes."
-    )
+// Load environment variables from project root
+require("dotenv").config({
+    path: path.resolve(__dirname, "../../../.env")
 });
 
-async function provisionSuperAdmin() {
-    const config = {
-        name: process.env.SUPER_ADMIN_NAME,
-        email: process.env.SUPER_ADMIN_EMAIL,
-        password: process.env.SUPER_ADMIN_PASSWORD || undefined
-    };
+const http = require("http");
+const bcrypt = require("bcrypt");
+const app = require("./app");
+const {
+    prisma,
+    connectDatabase,
+    disconnectDatabase
+} = require("./config/database");
 
-    if (!config.name && !config.email && !config.password) {
-        console.warn("Super-admin account not provisioned. Configure SUPER_ADMIN_NAME and SUPER_ADMIN_EMAIL.");
-        return;
+// Server configuration
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
+const BCRYPT_ROUNDS = 12;
+
+let server;
+let isShuttingDown = false;
+
+// Validate environment configuration
+function validateEnvironment() {
+    const requiredVariables = ["DATABASE_URL"];
+
+    const missingVariables = requiredVariables.filter(
+        (variable) => !process.env[variable]
+    );
+
+    if (missingVariables.length > 0) {
+        throw new Error(
+            `Missing environment variables: ${missingVariables.join(", ")}`
+        );
     }
 
-    if (!config.name || !config.email) {
-        throw new Error("Set SUPER_ADMIN_NAME and SUPER_ADMIN_EMAIL together.");
+    if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
+        throw new Error("Invalid PORT configuration.");
     }
-
-    const parsed = superAdminSchema.safeParse(config);
-
-    if (!parsed.success) {
-        const details = parsed.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("; ");
-        throw new Error(`Invalid super-admin configuration: ${details}`);
-    }
-
-    const { name } = parsed.data;
-    const email = parsed.data.email.toLowerCase();
-    const passwordHash = await bcrypt.hash(parsed.data.password, BCRYPT_ROUNDS);
-
-    await prisma.$transaction(async transaction => {
-        const user = await transaction.user.upsert({
-            where: { email },
-            create: {
-                name,
-                email,
-                passwordHash,
-                role: "super_admin"
-            },
-            update: {
-                name,
-                passwordHash,
-                role: "super_admin"
-            },
-            select: { id: true }
-        });
-
-        await transaction.user.updateMany({
-            where: {
-                role: "super_admin",
-                id: { not: user.id }
-            },
-            data: { role: "user" }
-        });
-    });
-
-    console.log("Super-admin account provisioned from server configuration.");
 }
 
+async function provisionSuperAdmin() {
+    const email = process.env.SUPER_ADMIN_EMAIL?.trim().toLowerCase();
+    const password = process.env.SUPER_ADMIN_PASSWORD;
+
+    if (!email && !password) return;
+    if (!email || !password) {
+        throw new Error("Set both SUPER_ADMIN_EMAIL and SUPER_ADMIN_PASSWORD to configure the Super Admin account.");
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error("SUPER_ADMIN_EMAIL must be a valid email address.");
+    }
+    if (password.length < 12 || Buffer.byteLength(password, "utf8") > 72) {
+        throw new Error("SUPER_ADMIN_PASSWORD must be at least 12 characters and no more than 72 UTF-8 bytes.");
+    }
+
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    const name = process.env.SUPER_ADMIN_NAME?.trim() || "Super Admin";
+
+    await prisma.user.upsert({
+        where: { email },
+        create: {
+            name,
+            email,
+            passwordHash,
+            role: "super_admin",
+            isActive: true
+        },
+        update: {
+            name,
+            passwordHash,
+            role: "super_admin",
+            isActive: true
+        }
+    });
+
+    console.log("Configured Super Admin account is ready.");
+}
+
+// Start the HTTP server only after database connection succeeds
 async function startServer() {
     try {
+        validateEnvironment();
+
         await connectDatabase();
         await provisionSuperAdmin();
 
-        const server = app.listen(PORT, HOST, () => {
-            console.log("--------------------------------------------");
-            console.log(" Global Network Kenya API");
-            console.log("--------------------------------------------");
+        server = http.createServer(app);
+
+        server.listen(PORT, HOST, () => {
+            console.log("-------------------------------------");
+            console.log(" GLOBAL NETWORK KENYA BACKEND");
+            console.log("-------------------------------------");
             console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-            console.log(`Server:      http://${HOST}:${PORT}`);
-            console.log(`Health:      http://${HOST}:${PORT}/api/health`);
-            console.log("Database:    Prisma connected");
-            console.log("--------------------------------------------");
+            console.log(`Server: http://${HOST}:${PORT}`);
+            console.log(`API: http://${HOST}:${PORT}/api`);
+            console.log(`Health: http://${HOST}:${PORT}/api/health`);
+            console.log("Database: Connected");
+            console.log("-------------------------------------");
         });
 
-        const shutdown = async signal => {
-            console.log(`\n${signal} received. Shutting down...`);
-
-            try {
-                await new Promise((resolve, reject) => {
-                    server.close(error => (error ? reject(error) : resolve()));
-                });
-
-                console.log("HTTP server closed.");
-            } finally {
-                await prisma.$disconnect();
-                console.log("Prisma disconnected.");
-            }
-        };
-
-        process.once("SIGINT", () => {
-            void shutdown("SIGINT");
+        server.on("error", (error) => {
+            console.error("HTTP server error:", error);
+            process.exitCode = 1;
         });
 
-        process.once("SIGTERM", () => {
-            void shutdown("SIGTERM");
-        });
     } catch (error) {
-        console.error("Failed to start Global Network Kenya.");
-        console.error("Reason:", error.message);
-        console.error("Check your DATABASE_URL and JWT_SECRET values.");
+        console.error("SERVER STARTUP FAILED:", error.message);
 
-        await prisma.$disconnect().catch(() => {});
+        await closeDatabase();
+
         process.exitCode = 1;
     }
 }
 
-process.on("unhandledRejection", reason => {
-    console.error("Unhandled promise rejection:", reason);
+// Close database connection safely
+async function closeDatabase() {
+    try {
+        await disconnectDatabase();
+        console.log("Database connection closed.");
+    } catch (error) {
+        console.error("Database shutdown error:", error.message);
+    }
+}
+
+// Graceful shutdown
+async function shutdown(signal) {
+    if (isShuttingDown) return;
+
+    isShuttingDown = true;
+
+    console.log(`\n${signal} received. Shutting down...`);
+
+    if (server) {
+        server.close(async (error) => {
+            if (error) {
+                console.error("HTTP shutdown error:", error);
+                process.exitCode = 1;
+            }
+
+            await closeDatabase();
+            process.exit();
+        });
+
+        // Prevent new connections
+        server.closeIdleConnections?.();
+
+    } else {
+        await closeDatabase();
+        process.exit();
+    }
+}
+
+// Operating system shutdown signals
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+
+// Unexpected application errors
+process.on("unhandledRejection", (reason) => {
+    console.error("Unhandled Promise Rejection:", reason);
+    shutdown("UNHANDLED_REJECTION");
 });
 
-process.on("uncaughtException", error => {
-    console.error("Uncaught exception:", error);
-    process.exit(1);
+process.on("uncaughtException", (error) => {
+    console.error("Uncaught Exception:", error);
+    shutdown("UNCAUGHT_EXCEPTION");
 });
 
-void startServer();
+// Start application
+startServer();
+``

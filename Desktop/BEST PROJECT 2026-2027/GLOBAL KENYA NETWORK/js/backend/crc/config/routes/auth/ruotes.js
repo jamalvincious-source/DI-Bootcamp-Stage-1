@@ -3,14 +3,14 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
-const { randomInt } = require("crypto");
+const { createHash, randomBytes, randomInt } = require("crypto");
 const jwt = require("jsonwebtoken");
 const { z } = require("zod");
 const { prisma } = require("../../database");
 const { authenticateToken } = require("../../../middleware/authenticate");
+const { clearAuthCookie, sessionLifetime, setAuthCookie } = require("../../auth-cookie");
 
 const router = express.Router();
-const JWT_EXPIRES_IN = "2h";
 const BCRYPT_ROUNDS = 12;
 const CODE_TTL_MS = 10 * 60 * 1000;
 const CODE_RESEND_DELAY_MS = 60 * 1000;
@@ -22,13 +22,15 @@ const requestTimestamps = new Map();
 const registerSchema = z.object({
     name: z.string().trim().min(2).max(100),
     email: z.string().trim().email().max(254),
+    phone: z.string().trim().regex(/^(?:\+254|254|0)7\d{8}$/).optional(),
     password: z.string().min(8).max(72),
     role: z.enum(["user", "advertiser"]).optional().default("user")
 });
 
 const loginSchema = z.object({
     email: z.string().trim().email().max(254),
-    password: z.string().min(1).max(72)
+    password: z.string().min(1).max(72),
+    rememberMe: z.boolean().optional().default(false)
 });
 
 const requestCodeSchema = z.object({
@@ -38,6 +40,13 @@ const requestCodeSchema = z.object({
 const verifyCodeSchema = z.object({
     email: z.string().trim().email().max(254),
     code: z.string().regex(/^\d{6}$/)
+});
+const resetPasswordSchema = z.object({
+    token: z.string().trim().min(32).max(256),
+    password: z.string().min(8).max(72).refine(
+        password => Buffer.byteLength(password, "utf8") <= 72,
+        "Password must not exceed 72 UTF-8 bytes."
+    )
 });
 
 function isRateLimited(key) {
@@ -95,12 +104,13 @@ function toPublicUser(user) {
         id: user.id,
         name: user.name,
         email: user.email,
+        phone: user.phone || "",
         role: user.role,
         createdAt: user.createdAt ?? user.created_at
     };
 }
 
-function createToken(user) {
+function createToken(user, rememberMe = false) {
     if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
         throw new Error("JWT_SECRET must be configured with at least 32 characters.");
     }
@@ -112,7 +122,7 @@ function createToken(user) {
         },
         process.env.JWT_SECRET,
         {
-            expiresIn: JWT_EXPIRES_IN,
+            expiresIn: sessionLifetime(rememberMe),
             issuer: "global-network-kenya",
             audience: "global-network-kenya-users"
         }
@@ -136,6 +146,10 @@ router.post("/register", async (req, res, next) => {
 
         const email = parsed.data.email.toLowerCase();
 
+        if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+            throw new Error("JWT_SECRET must be configured with at least 32 characters.");
+        }
+
         const existingUser = await prisma.user.findUnique({
             where: { email }
         });
@@ -153,6 +167,7 @@ router.post("/register", async (req, res, next) => {
             data: {
                 name: parsed.data.name.trim(),
                 email,
+                phone: parsed.data.phone || "",
                 passwordHash,
                 role: parsed.data.role
             },
@@ -160,10 +175,14 @@ router.post("/register", async (req, res, next) => {
                 id: true,
                 name: true,
                 email: true,
+                phone: true,
                 role: true,
                 createdAt: true
             }
         });
+
+        const token = createToken(user);
+        setAuthCookie(res, token);
 
         return res.status(201).json({
             success: true,
@@ -215,17 +234,152 @@ router.post("/login", async (req, res, next) => {
         }
 
         const user = toPublicUser(userRecord);
-        const token = createToken(user);
+        const token = createToken(user, parsed.data.rememberMe);
+        setAuthCookie(res, token, parsed.data.rememberMe);
 
         return res.status(200).json({
             success: true,
             message: "Login successful.",
-            token,
-            expiresIn: JWT_EXPIRES_IN,
+            expiresIn: sessionLifetime(parsed.data.rememberMe),
             user
         });
     } catch (error) {
         next(error);
+    }
+});
+
+router.post("/logout", (_req, res) => {
+    clearAuthCookie(res);
+    return res.status(200).json({
+        success: true,
+        message: "You have been logged out."
+    });
+});
+
+router.post("/forgot-password", async (req, res, next) => {
+    const parsed = requestCodeSchema.safeParse(req.body);
+    if (!parsed.success) {
+        return res.status(400).json({ success: false, message: "Enter a valid account email address." });
+    }
+
+    const email = parsed.data.email.toLowerCase();
+    const ip = req.ip || req.socket.remoteAddress || "unknown";
+    if (isRateLimited(`password-reset:${ip}`) || isRateLimited(`password-reset-email:${email}`)) {
+        return res.status(429).json({
+            success: false,
+            message: "Too many password reset requests. Please wait before trying again."
+        });
+    }
+
+    let mail;
+    let resetUrl;
+    try {
+        mail = createMailTransporter();
+        const frontendBaseUrl = new URL(process.env.FRONTEND_BASE_URL);
+        if (!["http:", "https:"].includes(frontendBaseUrl.protocol)) {
+            throw new Error("FRONTEND_BASE_URL must use HTTP or HTTPS.");
+        }
+        resetUrl = new URL("/pages/reset-password.html", frontendBaseUrl).toString();
+    } catch (error) {
+        console.error("Password reset email is not configured:", error.message);
+        return res.status(503).json({
+            success: false,
+            message: "Password reset is temporarily unavailable. Contact the site administrator."
+        });
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email },
+            select: { id: true, isActive: true }
+        });
+        if (!user || !user.isActive) {
+            return res.status(202).json({
+                success: true,
+                message: "If an active account uses that email, password reset instructions will be sent."
+            });
+        }
+
+        const token = randomBytes(32).toString("hex");
+        const tokenHash = createHash("sha256").update(token).digest("hex");
+        const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+        await prisma.passwordResetToken.upsert({
+            where: { userId: user.id },
+            create: { userId: user.id, tokenHash, expiresAt },
+            update: { tokenHash, expiresAt, createdAt: new Date() }
+        });
+
+        const link = new URL(resetUrl);
+        link.searchParams.set("token", token);
+        try {
+            await mail.transporter.sendMail({
+                from: mail.from,
+                to: email,
+                subject: "Reset your Global Network Kenya password",
+                text: `Use this link to reset your password within 30 minutes: ${link.toString()}\n\nIf you did not request this, ignore this email.`,
+                html: `<p>Use the link below to reset your password within 30 minutes.</p><p><a href="${link.toString()}">Reset password</a></p><p>If you did not request this, ignore this email.</p>`
+            });
+        } catch (error) {
+            await prisma.passwordResetToken.deleteMany({ where: { userId: user.id, tokenHash } });
+            console.error("Failed to deliver a password reset email:", error.message);
+            return res.status(503).json({
+                success: false,
+                message: "Could not send password reset instructions. Check the email service configuration and try again."
+            });
+        }
+
+        return res.status(202).json({
+            success: true,
+            message: "If an active account uses that email, password reset instructions will be sent."
+        });
+    } catch (error) {
+        return next(error);
+    }
+});
+
+router.post("/reset-password", async (req, res, next) => {
+    const parsed = resetPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+        return res.status(400).json({
+            success: false,
+            message: "Provide a valid reset link and a password of at least 8 characters."
+        });
+    }
+
+    const tokenHash = createHash("sha256").update(parsed.data.token).digest("hex");
+    try {
+        const resetRecord = await prisma.passwordResetToken.findUnique({
+            where: { tokenHash },
+            select: { id: true, userId: true }
+        });
+        if (!resetRecord) {
+            return res.status(400).json({ success: false, message: "This password reset link is invalid or has expired." });
+        }
+
+        const passwordHash = await bcrypt.hash(parsed.data.password, BCRYPT_ROUNDS);
+        await prisma.$transaction(async transaction => {
+            const consumed = await transaction.passwordResetToken.deleteMany({
+                where: { id: resetRecord.id, tokenHash, expiresAt: { gt: new Date() } }
+            });
+            if (consumed.count !== 1) {
+                const error = new Error("This password reset link is invalid or has expired.");
+                error.statusCode = 400;
+                throw error;
+            }
+            await transaction.user.update({
+                where: { id: resetRecord.userId },
+                data: { passwordHash }
+            });
+        });
+        return res.json({ success: true, message: "Your password has been reset. You can now sign in." });
+    } catch (error) {
+        if (error?.statusCode === 400) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+        if (error?.code === "P2025") {
+            return res.status(400).json({ success: false, message: "This password reset link is invalid or has expired." });
+        }
+        return next(error);
     }
 });
 

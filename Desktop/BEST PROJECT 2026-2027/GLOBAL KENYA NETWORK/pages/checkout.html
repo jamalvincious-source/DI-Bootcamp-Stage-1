@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create an advert | Global Network Kenya</title>
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      .checkout-shell { width: min(760px, 92%); margin: 36px auto 64px; }
+      .checkout-card { padding: 28px; background: #fff; border: 1px solid #dfeaf8; border-radius: 18px; }
+      .checkout-form { display: grid; gap: 16px; }
+      .checkout-form label { display: grid; gap: 7px; font-weight: 700; }
+      .checkout-form input, .checkout-form select, .checkout-form textarea {
+        width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 9px; font: inherit;
+      }
+      .checkout-form textarea { min-height: 120px; resize: vertical; }
+      .checkout-note, .checkout-message { padding: 14px; border-radius: 10px; background: #eff6ff; line-height: 1.6; }
+      .checkout-message.error { background: #fef3f2; color: #b42318; }
+      .checkout-message.success { background: #ecfdf3; color: #067647; }
+      .checkout-message[hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="../index.html" class="brand">GLOBAL NETWORK KENYA</a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="../index.html">Home</a>
+          <a href="businesses.html">Businesses</a>
+          <a href="packages.html">Packages</a>
+          <a href="../dashboard.html">Dashboard</a>
+        </nav>
+      </div>
+    </header>
+    <main class="checkout-shell">
+      <section class="checkout-card">
+        <h1>Create a business advert</h1>
+        <p>Choose one of your published businesses and an advertising package. Your advert is reviewed before publishing.</p>
+        <p class="checkout-note">This site currently records a pending payment request only. No money is collected until a payment provider is configured.</p>
+        <p id="checkoutMessage" class="checkout-message" role="status" aria-live="polite" hidden></p>
+        <form id="checkoutForm" class="checkout-form">
+          <label for="checkoutBusiness">Published business
+            <select id="checkoutBusiness" required><option value="">Loading businesses…</option></select>
+          </label>
+          <label for="checkoutPackage">Advertising package
+            <select id="checkoutPackage" required><option value="">Loading packages…</option></select>
+          </label>
+          <label for="checkoutTitle">Advert title
+            <input id="checkoutTitle" minlength="3" maxlength="150" required />
+          </label>
+          <label for="checkoutDescription">Description
+            <textarea id="checkoutDescription" maxlength="3000"></textarea>
+          </label>
+          <label for="checkoutImage">Image URL (optional)
+            <input id="checkoutImage" type="url" maxlength="2048" />
+          </label>
+          <label for="checkoutTarget">Destination URL (optional)
+            <input id="checkoutTarget" type="url" maxlength="2048" />
+          </label>
+          <label for="checkoutPhone">M-Pesa number for payment follow-up
+            <input id="checkoutPhone" type="tel" placeholder="07XXXXXXXX" pattern="(?:\+254|254|0)7\d{8}" required />
+          </label>
+          <button id="checkoutSubmit" class="cta" type="submit">Submit advert and payment request</button>
+        </form>
+      </section>
+    </main>
+    <script src="../js/app.js"></script>
+    <script>
+      const checkoutForm = document.getElementById("checkoutForm");
+      const checkoutMessage = document.getElementById("checkoutMessage");
+      const checkoutSubmit = document.getElementById("checkoutSubmit");
+      let submittedAdvertId = null;
+
+      function showCheckoutMessage(text, type = "") {
+        checkoutMessage.textContent = text;
+        checkoutMessage.className = `checkout-message ${type}`.trim();
+        checkoutMessage.hidden = false;
+      }
+
+      async function loadCheckoutOptions() {
+        if (!window.GNK.requireLogin()) return;
+        try {
+          const [businessResponse, packageResponse] = await Promise.all([
+            window.GNK.apiRequest("/businesses/mine"),
+            window.GNK.apiRequest("/packages")
+          ]);
+          const businessSelect = document.getElementById("checkoutBusiness");
+          const publishedBusinesses = (businessResponse.businesses || [])
+            .filter(business => business.status === "published");
+          businessSelect.replaceChildren(new Option(
+            publishedBusinesses.length ? "Choose your business" : "No published businesses available",
+            ""
+          ));
+          for (const business of publishedBusinesses) {
+            businessSelect.add(new Option(`${business.name} — ${business.county}`, String(business.id)));
+          }
+
+          const packageSelect = document.getElementById("checkoutPackage");
+          const packages = packageResponse.packages || [];
+          packageSelect.replaceChildren(new Option("Choose a package", ""));
+          for (const item of packages) {
+            packageSelect.add(new Option(
+              `${item.name} — ${new Intl.NumberFormat("en-KE", {
+                style: "currency", currency: item.currency || "KES", maximumFractionDigits: 0
+              }).format(item.price)} / ${item.durationDays} days`,
+              String(item.id)
+            ));
+          }
+
+          const selectedPackageId = new URLSearchParams(location.search).get("packageId");
+          if (selectedPackageId && packages.some(item => String(item.id) === selectedPackageId)) {
+            packageSelect.value = selectedPackageId;
+          } else {
+            const placement = new URLSearchParams(location.search).get("placement");
+            const selectedPackage = packages.find(item => item.placement === placement);
+            if (selectedPackage) packageSelect.value = String(selectedPackage.id);
+          }
+          const user = window.GNK.getCurrentUser();
+          document.getElementById("checkoutPhone").value = user?.phone || "";
+          if (!publishedBusinesses.length) {
+            showCheckoutMessage("Register a business first. It must be approved and published before you can advertise it.");
+          }
+          if (!packages.length) {
+            showCheckoutMessage("No active advertising packages are available right now.", "error");
+          }
+        } catch (error) {
+          showCheckoutMessage(error.message || "Unable to load your checkout options.", "error");
+          checkoutSubmit.disabled = true;
+        }
+      }
+
+      checkoutForm.addEventListener("submit", async event => {
+        event.preventDefault();
+        if (!checkoutForm.reportValidity()) return;
+        checkoutSubmit.disabled = true;
+        checkoutMessage.hidden = true;
+        try {
+          if (!submittedAdvertId) {
+            const advertResponse = await window.GNK.apiRequest("/adverts", {
+              method: "POST",
+              body: JSON.stringify({
+                businessId: Number(document.getElementById("checkoutBusiness").value),
+                packageId: Number(document.getElementById("checkoutPackage").value),
+                title: document.getElementById("checkoutTitle").value.trim(),
+                description: document.getElementById("checkoutDescription").value.trim(),
+                imageUrl: document.getElementById("checkoutImage").value.trim() || null,
+                targetUrl: document.getElementById("checkoutTarget").value.trim() || null
+              })
+            });
+            submittedAdvertId = advertResponse.advert.id;
+          }
+          const paymentResponse = await window.GNK.apiRequest("/payments", {
+            method: "POST",
+            body: JSON.stringify({
+              advertId: submittedAdvertId,
+              phone: document.getElementById("checkoutPhone").value.trim()
+            })
+          });
+          showCheckoutMessage(
+            `Advert submitted for review. Payment request #${paymentResponse.payment.id} is pending. No money has been collected. Track its status in your dashboard.`,
+            "success"
+          );
+          checkoutSubmit.textContent = "Request submitted";
+        } catch (error) {
+          showCheckoutMessage(error.message || "Unable to submit your advert request.", "error");
+        } finally {
+          checkoutSubmit.disabled = Boolean(submittedAdvertId && checkoutMessage.classList.contains("success"));
+        }
+      });
+
+      loadCheckoutOptions();
+    </script>
+  </body>
+</html>

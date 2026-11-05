@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -15,10 +15,39 @@ model User {
   passwordHash String   @map("password_hash")
   role         String   @default("user")
   isActive     Boolean  @default(true) @map("is_active")
+  emailVerified Boolean @default(false) @map("email_verified")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+  listings     MarketplaceListing[]
+  businesses   Business[]
+  orders       Order[]
+  payments     Payment[]
+  enquiries    Enquiry[]
+  auditLogs    AuditLog[]
+  passwordResetToken PasswordResetToken?
 
   @@map("users")
+}
+
+model MarketplaceListing {
+  id          Int      @id @default(autoincrement())
+  sellerId    Int      @map("seller_id")
+  seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  category    String
+  county      String
+  price       Float
+  condition   String
+  imageUrl    String?  @map("image_url")
+  status      String   @default("pending")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([sellerId, createdAt])
+  @@index([price])
+  @@map("marketplace_listings")
 }
 
 model AdminAuditLog {
@@ -42,4 +71,231 @@ model SuperAdminLoginChallenge {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("super_admin_login_challenges")
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_reset_tokens")
+}
+
+model BusinessCategory {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("business_categories")
+}
+
+model Business {
+  id              Int       @id @default(autoincrement())
+  ownerId         Int       @map("owner_id")
+  owner           User      @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  name            String
+  category        String
+  county          String
+  phone           String?
+  email           String?
+  website         String?
+  address         String?
+  description     String?
+  imageUrl        String?   @map("image_url")
+  latitude        Float?
+  longitude       Float?
+  status          String    @default("pending")
+  rejectionReason String?   @map("rejection_reason")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  products        Product[]
+  adverts         Advert[]
+  enquiries       Enquiry[]
+
+  @@index([ownerId])
+  @@index([category])
+  @@index([county])
+  @@index([status])
+  @@map("businesses")
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  businessId  Int         @map("business_id")
+  business    Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name        String
+  productType String      @default("product") @map("product_type")
+  category    String?
+  description String?
+  price       Float?
+  currency    String      @default("KES")
+  stockQuantity Int?      @map("stock_quantity")
+  imageUrl    String?     @map("image_url")
+  images      String      @default("[]")
+  county      String?
+  address     String?
+  status      String      @default("pending")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  orderItems  OrderItem[]
+
+  @@index([businessId])
+  @@index([status])
+  @@index([productType])
+  @@map("products")
+}
+
+model Package {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  price       Float     @default(0)
+  currency    String    @default("KES")
+  durationDays Int      @default(30) @map("duration_days")
+  placement   String
+  features    String    @default("[]")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  adverts     Advert[]
+  payments    Payment[]
+
+  @@map("packages")
+}
+
+model Advert {
+  id          Int        @id @default(autoincrement())
+  businessId  Int        @map("business_id")
+  business    Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  packageId   Int?       @map("package_id")
+  package     Package?   @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  title       String
+  description String?
+  imageUrl    String?    @map("image_url")
+  targetUrl   String?    @map("target_url")
+  placement   String     @default("standard")
+  status      String     @default("pending")
+  startsAt    DateTime?  @map("starts_at")
+  endsAt      DateTime?  @map("ends_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  payments    Payment[]
+  enquiries   Enquiry[]
+
+  @@index([businessId])
+  @@index([packageId])
+  @@index([status])
+  @@index([startsAt, endsAt])
+  @@map("adverts")
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  orderNumber     String      @unique @default(cuid()) @map("order_number")
+  userId          Int         @map("user_id")
+  user            User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  customerName    String      @map("customer_name")
+  customerEmail   String?     @map("customer_email")
+  customerPhone   String      @map("customer_phone")
+  shippingAddress String?     @map("shipping_address")
+  shippingCounty  String?     @map("shipping_county")
+  subtotal        Float       @default(0)
+  deliveryFee     Float       @default(0) @map("delivery_fee")
+  totalAmount     Float       @default(0) @map("total_amount")
+  currency        String      @default("KES")
+  status          String      @default("pending")
+  paymentStatus   String      @default("pending") @map("payment_status")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  items           OrderItem[]
+  payments        Payment[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int      @map("order_id")
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   Int?     @map("product_id")
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName String   @map("product_name")
+  unitPrice   Float    @map("unit_price")
+  quantity    Int
+  lineTotal   Float    @map("line_total")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("order_items")
+}
+
+model Payment {
+  id                    Int      @id @default(autoincrement())
+  userId                Int?     @map("user_id")
+  user                  User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orderId               Int?     @map("order_id")
+  order                 Order?   @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  packageId             Int?     @map("package_id")
+  package               Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  advertId              Int?     @map("advert_id")
+  advert                Advert?  @relation(fields: [advertId], references: [id], onDelete: SetNull)
+  amount                Float
+  currency              String   @default("KES")
+  phone                 String?
+  paymentMethod         String   @default("mpesa") @map("payment_method")
+  status                String   @default("pending")
+  providerReceipt       String?  @unique @map("provider_receipt")
+  providerCheckoutId    String?  @map("provider_checkout_id")
+  providerTransactionId String?  @map("provider_transaction_id")
+  metadata              String   @default("{}")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
+  @@map("payments")
+}
+
+model Enquiry {
+  id            Int       @id @default(autoincrement())
+  businessId    Int?      @map("business_id")
+  business      Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  advertId      Int?      @map("advert_id")
+  advert        Advert?   @relation(fields: [advertId], references: [id], onDelete: SetNull)
+  userId        Int?      @map("user_id")
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName  String    @map("customer_name")
+  customerEmail String?   @map("customer_email")
+  customerPhone String?   @map("customer_phone")
+  message       String
+  status        String    @default("new")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([businessId])
+  @@index([status])
+  @@map("enquiries")
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  actorId    Int?     @map("actor_id")
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String   @map("entity_type")
+  entityId   Int?     @map("entity_id")
+  details    String   @default("{}")
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([actorId])
+  @@map("audit_logs")
 }

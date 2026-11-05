@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" role="img" aria-labelledby="title desc">
+  <title id="title">RIOBA demo campaign: innovation hub</title>
+  <desc id="desc">Bright modern enterprise campus with glowing windows and a rising path toward the sunrise.</desc>
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1">
+      <stop stop-color="#10234f"/>
+      <stop offset="1" stop-color="#347ca1"/>
+    </linearGradient>
+    <radialGradient id="sun">
+      <stop stop-color="#fff6c1"/>
+      <stop offset=".42" stop-color="#ffda85" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#ffda85" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="glass" x2="0" y2="1">
+      <stop stop-color="#a8ecdc"/>
+      <stop offset="1" stop-color="#36839a"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="420" fill="url(#sky)"/>
+  <circle cx="555" cy="132" r="130" fill="url(#sun)"/>
+  <circle cx="555" cy="132" r="43" fill="#fff0a8"/>
+  <path d="M0 332q120-67 240 0t240 0 240 0v88H0Z" fill="#122d54"/>
+  <path d="M72 420V233l80-54 80 54v187Zm190 0V150l96-68 96 68v270Zm224 0V217l83-55 83 55v203Z" fill="url(#glass)" stroke="#153c60" stroke-width="8"/>
+  <g fill="#e1fff0">
+    <path d="M97 253h26v23H97zm55 0h26v23h-26zm-55 48h26v23H97zm55 0h26v23h-26zm-55 48h26v23H97zm55 0h26v23h-26z"/>
+    <path d="M292 179h28v23h-28zm55 0h28v23h-28zm-55 49h28v23h-28zm55 0h28v23h-28zm-55 49h28v23h-28zm55 0h28v23h-28zm-55 49h28v23h-28zm55 0h28v23h-28z"/>
+    <path d="M599 239h25v22h-25zm48 0h25v22h-25zm-48 47h25v22h-25zm48 0h25v22h-25zm-48 47h25v22h-25zm48 0h25v22h-25z"/>
+  </g>
+  <path d="m70 176 138-25 122 22 122-71 114 15" fill="none" stroke="#ffe982" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <path d="m548 105 19 14-21 13" fill="none" stroke="#ffe982" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <rect x="28" y="28" width="145" height="47" rx="23" fill="#fff" fill-opacity=".12" stroke="#fff" stroke-opacity=".35"/>
+  <text x="100" y="59" fill="#fff" font-family="Arial,sans-serif" font-size="22" font-weight="700" text-anchor="middle" letter-spacing="3">RIOBA</text>
+</svg>

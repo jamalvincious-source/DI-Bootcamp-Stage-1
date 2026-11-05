@@ -2,24 +2,20 @@
 
 const jwt = require("jsonwebtoken");
 const { prisma } = require("../config/database");
+const { getAuthToken } = require("../config/auth-cookie");
 
 async function authenticateToken(req, res, next) {
-    const authorization = req.headers.authorization;
+    const token = getAuthToken(req);
 
-    if (!authorization || !authorization.startsWith("Bearer ")) {
+    if (!token) {
         return res.status(401).json({
             success: false,
             message: "Authentication required. Please log in."
         });
     }
 
-    const token = authorization.slice(7).trim();
-
-    if (!token) {
-        return res.status(401).json({
-            success: false,
-            message: "Authentication token is missing."
-        });
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+        return next(new Error("JWT_SECRET must be configured with at least 32 characters."));
     }
 
     let payload;
@@ -35,13 +31,22 @@ async function authenticateToken(req, res, next) {
         });
     }
 
+    const userId = Number(payload.sub);
+    if (!Number.isSafeInteger(userId) || userId < 1) {
+        return res.status(401).json({
+            success: false,
+            message: "Your session is invalid or has expired. Please log in again."
+        });
+    }
+
     try {
         const user = await prisma.user.findUnique({
-            where: { id: Number(payload.sub) },
+            where: { id: userId },
             select: {
                 id: true,
                 name: true,
                 email: true,
+                phone: true,
                 role: true,
                 isActive: true,
                 createdAt: true
@@ -56,7 +61,15 @@ async function authenticateToken(req, res, next) {
         }
 
         req.auth = payload;
-        req.user = user;
+        req.user = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            role: user.role,
+            isActive: user.isActive,
+            createdAt: user.createdAt
+        };
         return next();
     } catch (error) {
         return next(error);

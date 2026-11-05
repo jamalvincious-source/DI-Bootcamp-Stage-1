@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard | Global Network Kenya</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="js/app.js" defer></script>
     <style>
       :root {
         --gnk-blue: #0b3b78;
@@ -214,6 +215,47 @@
         padding: 16px;
       }
 
+      .advert-card img {
+        display: block;
+        width: 100%;
+        max-height: 220px;
+        margin: 0 0 14px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      .rioba-showcase {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .rioba-showcase-card {
+        overflow: hidden;
+        border: 1px solid var(--gnk-border);
+        border-radius: 14px;
+        background: #fff;
+      }
+
+      .rioba-showcase-card img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1.65;
+        object-fit: cover;
+      }
+
+      .rioba-showcase-card h3 {
+        margin: 14px 14px 6px;
+        font-size: 1rem;
+      }
+
+      .rioba-showcase-card p {
+        margin: 0 14px 14px;
+        color: var(--gnk-muted);
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
+
       .item-top {
         display: flex;
         justify-content: space-between;
@@ -297,6 +339,7 @@
       .status.active { background: #ecfdf5; color: var(--gnk-success); }
       .status.review { background: #fef3c7; color: #92400e; }
       .status.approved { background: #ecfdf5; color: var(--gnk-success); }
+      .status.published { background: #ecfdf5; color: var(--gnk-success); }
       .status.rejected { background: #fef3f2; color: var(--gnk-danger); }
 
       .empty-state {
@@ -353,6 +396,10 @@
         gap: 12px;
       }
 
+      #demoCampaignForm[hidden] {
+        display: none;
+      }
+
       .summary-card {
         background: linear-gradient(180deg, #ffffff, #f8fbff);
         border: 1px solid var(--gnk-border);
@@ -386,6 +433,11 @@
         .content-grid {
           grid-template-columns: 1fr;
         }
+
+        .rioba-showcase {
+          grid-template-columns: 1fr;
+        }
+
       }
 
       @media (max-width: 560px) {
@@ -398,6 +450,7 @@
           padding-left: 16px;
           padding-right: 16px;
         }
+
       }
     </style>
   </head>
@@ -439,7 +492,6 @@
     </main>
 
     <script>
-      const API_URL = "http://localhost:3000/api";
       let authenticatedUser = null;
 
       const MARKET_ITEMS = [
@@ -535,37 +587,85 @@
         })[character]);
       }
 
-      async function adminRequest(path, options = {}) {
-        const token = localStorage.getItem("gnk_token") ||
-          sessionStorage.getItem("gnk_token") ||
-          getCookieValue("gnk_token");
-        const response = await fetch(`${API_URL}${path}`, {
-          ...options,
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...options.headers
-          }
-        });
-        const result = await response.json().catch(() => ({}));
+      function safeExternalUrl(value) {
+        if (typeof value !== "string" || !value.trim()) return "";
 
-        if (response.status === 401) {
-          clearSession();
-          window.location.href = "pages/login.html";
-          throw new Error("Your session has expired. Please log in again.");
+        try {
+          const url = new URL(value);
+          return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+        } catch {
+          return "";
         }
-        if (!response.ok) {
-          throw new Error(result.message || "The admin request failed.");
-        }
-        return result;
       }
 
-      function getCurrentUser() {
+      function renderAdvertCard(advert, showStatus = false) {
+        const imageUrl = safeExternalUrl(advert.imageUrl);
+        const targetUrl = safeExternalUrl(advert.targetUrl);
+        const status = String(advert.status || "pending").toLowerCase();
+        const statusClass = ["pending", "published", "rejected"].includes(status) ? status : "pending";
+        const placement = String(advert.placement || "standard");
+        const businessName = advert.business?.name || "Business";
+
+        return `
+          <article class="request-item advert-card">
+            ${imageUrl ? `<img src="${escapeHTML(imageUrl)}" alt="${escapeHTML(advert.title)}" loading="lazy">` : ""}
+            <div class="item-top">
+              <h3>${escapeHTML(advert.title)}</h3>
+              ${showStatus
+                ? `<span class="status ${statusClass}">${escapeHTML(advert.status || "Pending")}</span>`
+                : `<span class="tag">${escapeHTML(placement)} advert</span>`}
+            </div>
+            <p class="meta">${escapeHTML(businessName)}${advert.business?.county ? ` · ${escapeHTML(advert.business.county)}` : ""}</p>
+            ${advert.description ? `<p>${escapeHTML(advert.description)}</p>` : ""}
+            ${showStatus && advert.createdAt ? `<p class="meta">Submitted ${formatDateStamp(advert.createdAt)}</p>` : ""}
+            ${targetUrl
+              ? `<a class="secondary-btn" href="${escapeHTML(targetUrl)}" target="_blank" rel="noopener noreferrer">View advert</a>`
+              : '<span class="meta">No website link provided</span>'}
+          </article>`;
+      }
+
+      function renderHouseAdvertCard(advert) {
+        const imageUrl = safeExternalUrl(advert.imageUrl);
+        const targetUrl = safeExternalUrl(advert.targetUrl);
+
+        return `
+          <article class="request-item advert-card">
+            ${imageUrl ? `<img src="${escapeHTML(imageUrl)}" alt="${escapeHTML(advert.title)}" loading="lazy">` : ""}
+            <div class="item-top">
+              <h3>${escapeHTML(advert.title)}</h3>
+              <span class="tag">${escapeHTML(advert.placement || "standard")} property advert</span>
+            </div>
+            <p class="meta">${escapeHTML(advert.business?.name || "Property advertiser")}${advert.business?.county ? ` · ${escapeHTML(advert.business.county)}` : ""}</p>
+            ${advert.description ? `<p>${escapeHTML(advert.description)}</p>` : ""}
+            <div class="actions">
+              ${targetUrl
+                ? `<a class="secondary-btn" href="${escapeHTML(targetUrl)}" target="_blank" rel="noopener noreferrer">View property</a>`
+                : ""}
+              <a class="primary-btn" href="tel:0118237749">Call Global Network Kenya · 0118 237749</a>
+            </div>
+          </article>`;
+      }
+
+      async function adminRequest(path, options = {}) {
+        try {
+          return await window.GNK.apiRequest(path, options);
+        } catch (error) {
+          if (error.status === 401) {
+            window.GNK.clearSession();
+            window.location.href = "pages/login.html";
+            throw new Error("Your session has expired. Please log in again.");
+          }
+
+          throw error;
+        }
+      }
+
+      function getDashboardUser() {
         return authenticatedUser;
       }
 
       function ensureAccess() {
-        const user = getCurrentUser();
+        const user = getDashboardUser();
         if (!user) {
           window.location.href = "pages/login.html";
           return null;
@@ -574,25 +674,15 @@
       }
 
       async function loadAuthenticatedUser() {
-        const token = localStorage.getItem("gnk_token") ||
-          sessionStorage.getItem("gnk_token") ||
-          getCookieValue("gnk_token");
+        let result;
+        try {
+          result = await window.GNK.apiRequest("/auth/me");
+        } catch (error) {
+          if (error.status === 401) {
+            return null;
+          }
 
-        if (!token) {
-          return null;
-        }
-
-        const response = await fetch(`${API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const result = await response.json().catch(() => ({}));
-
-        if (response.status === 401) {
-          return null;
-        }
-
-        if (!response.ok) {
-          throw new Error(result.message || "Unable to verify your account.");
+          throw error;
         }
 
         if (!result.user || !result.user.role) {
@@ -600,15 +690,6 @@
         }
 
         return result.user;
-      }
-
-      function clearSession() {
-        localStorage.removeItem("gnk_user");
-        localStorage.removeItem("gnk_token");
-        sessionStorage.removeItem("gnk_user");
-        sessionStorage.removeItem("gnk_token");
-        document.cookie = "gnk_user=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax";
-        document.cookie = "gnk_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax";
       }
 
       function showPackagePromptIfNeeded() {
@@ -704,120 +785,232 @@
       }
 
       function renderStats() {
-        const statsGrid = document.getElementById("statsGrid");
-
-        const requests = getRequests().filter(item => item.user === (getCurrentUser()?.name || "User"));
-        const businessRequests = getBusinessRequests().filter(item => item.user === (getCurrentUser()?.name || "User"));
-        const businesses = MARKET_ITEMS.length;
-        const videos = getVideos().length;
-
-        statsGrid.innerHTML = `
-          <article class="stat-card">
-            <div class="label">Market listings</div>
-            <div class="value">${businesses}</div>
-          </article>
-          <article class="stat-card">
-            <div class="label">My requests</div>
-            <div class="value">${requests.length + businessRequests.length}</div>
-          </article>
-          <article class="stat-card">
-            <div class="label">Business videos</div>
-            <div class="value">${videos}</div>
-          </article>
-          <article class="stat-card">
-            <div class="label">Open opportunity</div>
-            <div class="value">${MARKET_ITEMS.length - 1}</div>
-          </article>
-        `;
+        document.getElementById("statsGrid").innerHTML = `
+          <article class="stat-card"><div class="label">My businesses</div><div class="value">—</div></article>
+          <article class="stat-card"><div class="label">My marketplace listings</div><div class="value">—</div></article>
+          <article class="stat-card"><div class="label">My adverts</div><div class="value">—</div></article>
+          <article class="stat-card"><div class="label">Pending payments</div><div class="value">—</div></article>`;
       }
 
-      function renderUserDashboard(user) {
+      async function renderUserDashboard(user) {
         const primaryPanel = document.getElementById("primaryPanel");
         const secondaryPanel = document.getElementById("secondaryPanel");
-
-        const requestList = getRequests().filter(item => item.user === user.name);
-        const businessRequestList = getBusinessRequests().filter(item => item.user === user.name);
-        const combinedRequests = [...requestList, ...businessRequestList];
 
         primaryPanel.innerHTML = `
           <div class="panel">
             <div class="panel-header">
-              <h2>What is on the market</h2>
-              <span class="pill">Live updates</span>
+              <h2>Grow your business</h2>
+              <span class="pill">Connected to your account</span>
             </div>
-            <div class="market-list">
-              ${MARKET_ITEMS.map(item => `
-                <article class="market-item">
-                  <div class="item-top">
-                    <h3>${item.name}</h3>
-                    <span class="tag">${item.category}</span>
-                  </div>
-                  <p class="meta">${item.county} · ${item.status}</p>
-                  <p>${item.summary}</p>
-                  <div class="actions">
-                    <span class="status active">Open</span>
-                    <button class="primary-btn" type="button" data-request-id="${item.id}">Send advert request</button>
-                  </div>
-                </article>
-              `).join("")}
+            <p class="meta">Your business profiles, marketplace listings, adverts and payment requests are loaded from your Global Network Kenya account.</p>
+            <div class="actions">
+              <a class="primary-btn" href="business.html">Register a business</a>
+              <a class="secondary-btn" href="pages/businesses.html">Browse businesses and marketplace</a>
+              <a class="secondary-btn" href="pages/packages.html">View advertising packages</a>
             </div>
+          </div>
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header">
+              <h2>Discover adverts</h2>
+              <span class="pill">Published</span>
+            </div>
+            <p class="meta">Browse current adverts from businesses across the network.</p>
+            <div id="dashboardPublishedAdverts" class="request-list">Loading published adverts…</div>
+          </div>
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header">
+              <h2>House and property adverts</h2>
+              <span class="pill">Published listings</span>
+            </div>
+            <p class="meta">Browse published adverts from Real Estate businesses. Call 0118 237749 for help with a listing.</p>
+            <div id="dashboardHouseAdverts" class="request-list">Loading published property adverts…</div>
           </div>
         `;
 
         secondaryPanel.innerHTML = `
           <div class="panel">
             <div class="panel-header">
-              <h2>My requests</h2>
-              <span class="pill">${combinedRequests.length}</span>
+              <h2>My adverts</h2>
+              <a class="pill" href="pages/packages.html">Create an advert</a>
             </div>
-            <div class="request-list">
-              ${combinedRequests.length ? combinedRequests.map(item => {
-                const itemStatus = normalizeStatus(item.status, "Pending");
-                return `
-                  <article class="request-item">
-                    <div class="item-top">
-                      <h3>${item.business}</h3>
-                      <span class="status ${itemStatus === "Approved" ? "approved" : itemStatus === "Pending" ? "pending" : itemStatus === "Rejected" ? "rejected" : "review"}">${itemStatus}</span>
-                    </div>
-                    <p class="meta">Submitted: ${formatDateStamp(item.date)}</p>
-                  </article>
-                `;
-              }).join("") : `<div class="empty-state">No advert or business requests yet. Start by sending one.</div>`}
+            <div id="accountAdverts" class="request-list">Loading your adverts…</div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2>My payment requests</h2></div>
+            <div id="accountPayments" class="request-list">Loading payment requests…</div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Sell on the marketplace</h2>
+              <span class="pill">Seller tools</span>
             </div>
+            <p class="meta">Add an item with its price and condition. New or edited listings are reviewed before appearing publicly.</p>
+            <form class="video-form" id="sellerListingForm">
+              <input id="sellerListingTitle" type="text" placeholder="Item title" minlength="3" maxlength="150" required />
+              <textarea id="sellerListingDescription" placeholder="Describe the item (at least 10 characters)" minlength="10" maxlength="3000" required></textarea>
+              <select id="sellerListingCategory" required>
+                <option value="">Choose a category</option>
+                ${["Agriculture & Farming", "Food & Restaurants", "Beauty & Personal Care", "Construction & Home Services", "Education & Training", "Healthcare & Medical Services", "Real Estate", "Retail & Shopping", "Technology & Electronics", "Transport & Logistics", "Tourism & Hospitality", "Other"].map(category => `<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`).join("")}
+              </select>
+              <input id="sellerListingCounty" type="text" placeholder="County" minlength="2" maxlength="100" required />
+              <input id="sellerListingPrice" type="number" placeholder="Price (KES)" min="0" max="1000000000" step="1" required />
+              <select id="sellerListingCondition" required>
+                <option value="">Choose condition</option>
+                ${["New", "Like new", "Good", "Fair", "Refurbished"].map(condition => `<option value="${condition}">${condition}</option>`).join("")}
+              </select>
+              <input id="sellerListingImage" type="url" placeholder="Photo URL (optional)" maxlength="2048" />
+              <button class="primary-btn" id="sellerListingSubmit" type="submit">Submit listing for review</button>
+              <button class="secondary-btn" id="sellerListingCancelEdit" type="button" hidden>Cancel edit</button>
+            </form>
+            <p id="sellerListingMessage" role="status" aria-live="polite"></p>
+            <div id="sellerListingList" class="request-list" aria-live="polite">Loading your listings…</div>
           </div>
         `;
 
-        document.querySelectorAll("[data-request-id]").forEach(button => {
-          button.addEventListener("click", () => {
-            const id = Number(button.dataset.requestId);
-            const item = MARKET_ITEMS.find(entry => entry.id === id);
-            if (!item) return;
+        const [businessResponse, advertResponse, paymentResponse, publishedAdvertResponse, houseAdvertResponse] = await Promise.all([
+          window.GNK.apiRequest("/businesses/mine"),
+          window.GNK.apiRequest("/adverts/mine"),
+          window.GNK.apiRequest("/payments/mine"),
+          window.GNK.apiRequest("/adverts"),
+          window.GNK.apiRequest("/adverts?category=Real%20Estate")
+        ]);
+        const businessCount = businessResponse.businesses?.length || 0;
+        const advertCount = advertResponse.adverts?.length || 0;
+        const paymentCount = (paymentResponse.payments || []).filter(payment =>
+          ["pending", "processing"].includes(payment.status)
+        ).length;
+        const listingsResponse = await window.GNK.apiRequest("/listings/mine");
+        const listingCount = listingsResponse.listings?.length || 0;
+        document.getElementById("statsGrid").innerHTML = `
+          <article class="stat-card"><div class="label">My businesses</div><div class="value">${businessCount}</div></article>
+          <article class="stat-card"><div class="label">My marketplace listings</div><div class="value">${listingCount}</div></article>
+          <article class="stat-card"><div class="label">My adverts</div><div class="value">${advertCount}</div></article>
+          <article class="stat-card"><div class="label">Pending payments</div><div class="value">${paymentCount}</div></article>`;
 
-            const requests = getRequests();
-            const existing = requests.some(entry => entry.business === item.name && entry.user === user.name);
-            if (existing) {
-              alert("You already sent a request for this business.");
-              return;
-            }
+        document.getElementById("accountAdverts").innerHTML = advertResponse.adverts?.length
+          ? advertResponse.adverts.map(advert => renderAdvertCard(advert, true)).join("")
+          : '<div class="empty-state">You have not submitted any adverts.</div>';
+        document.getElementById("dashboardPublishedAdverts").innerHTML = publishedAdvertResponse.adverts?.length
+          ? publishedAdvertResponse.adverts.map(advert => renderAdvertCard(advert)).join("")
+          : '<div class="empty-state">There are no published adverts to display right now.</div>';
+        document.getElementById("dashboardHouseAdverts").innerHTML = houseAdvertResponse.adverts?.length
+          ? houseAdvertResponse.adverts.map(renderHouseAdvertCard).join("")
+          : '<div class="empty-state">There are no published house or property adverts right now.</div>';
+        document.getElementById("accountPayments").innerHTML = paymentResponse.payments?.length
+          ? paymentResponse.payments.map(payment => `
+            <article class="request-item">
+              <div class="item-top"><h3>${escapeHTML(payment.package?.name || "Advert payment")}</h3>
+                <span class="status ${escapeHTML(payment.status)}">${escapeHTML(payment.status)}</span></div>
+              <p class="meta">${escapeHTML(payment.currency)} ${Number(payment.amount).toLocaleString("en-KE")} · ${escapeHTML(payment.phone || "")} · ${formatDateStamp(payment.createdAt)}</p>
+            </article>`).join("")
+          : '<div class="empty-state">You have no payment requests.</div>';
 
-            requests.unshift({
-              id: Date.now(),
-              user: user.name,
-              business: item.name,
-              status: "Pending",
-              date: new Date().toISOString()
-            });
-            writeJson("gnk_advert_requests", requests);
-            renderDashboard();
-          });
+        let editingListingId = null;
+        const sellerListingForm = document.getElementById("sellerListingForm");
+        const sellerListingMessage = document.getElementById("sellerListingMessage");
+        const sellerListingList = document.getElementById("sellerListingList");
+        const sellerListingSubmit = document.getElementById("sellerListingSubmit");
+        const sellerListingCancelEdit = document.getElementById("sellerListingCancelEdit");
+        const showSellerListingMessage = (message, isError = false) => {
+          sellerListingMessage.textContent = message;
+          sellerListingMessage.style.color = isError ? "#b42318" : "#0f766e";
+        };
+        const loadSellerListings = async () => {
+          const result = await window.GNK.apiRequest("/listings/mine");
+          const listings = result.listings || [];
+          sellerListingList.innerHTML = listings.length
+            ? listings.map(listing => `
+              <article class="request-item">
+                <div class="item-top">
+                  <h3>${escapeHTML(listing.title)}</h3>
+                  <span class="status ${escapeHTML(listing.status)}">${escapeHTML(listing.status)}</span>
+                </div>
+                <p class="meta">KES ${Number(listing.price).toLocaleString("en-KE")} · ${escapeHTML(listing.condition)} · ${escapeHTML(listing.county)}</p>
+                <div class="actions">
+                  <button class="secondary-btn" type="button" data-edit-listing="${listing.id}">Edit</button>
+                  <button class="ghost-btn" type="button" data-delete-listing="${listing.id}">Remove</button>
+                </div>
+              </article>`).join("")
+            : '<div class="empty-state">You have not submitted any marketplace listings yet.</div>';
+          return listings;
+        };
+        const resetSellerListingForm = () => {
+          editingListingId = null;
+          sellerListingForm.reset();
+          sellerListingSubmit.textContent = "Submit listing for review";
+          sellerListingCancelEdit.hidden = true;
+        };
+
+        loadSellerListings().catch(error => {
+          sellerListingList.textContent = error.message;
         });
+        sellerListingForm.addEventListener("submit", async event => {
+          event.preventDefault();
+          const data = {
+            title: document.getElementById("sellerListingTitle").value.trim(),
+            description: document.getElementById("sellerListingDescription").value.trim(),
+            category: document.getElementById("sellerListingCategory").value,
+            county: document.getElementById("sellerListingCounty").value.trim(),
+            price: Number(document.getElementById("sellerListingPrice").value),
+            condition: document.getElementById("sellerListingCondition").value,
+            imageUrl: document.getElementById("sellerListingImage").value.trim() || null
+          };
+          const wasEditing = Boolean(editingListingId);
+          sellerListingSubmit.disabled = true;
+          try {
+            await window.GNK.apiRequest(
+              editingListingId ? `/listings/${editingListingId}` : "/listings",
+              { method: editingListingId ? "PATCH" : "POST", body: JSON.stringify(data) }
+            );
+            resetSellerListingForm();
+            showSellerListingMessage(wasEditing
+              ? "Listing updated and sent for review."
+              : "Listing submitted for review.");
+            await loadSellerListings();
+          } catch (error) {
+            showSellerListingMessage(error.message, true);
+          } finally {
+            sellerListingSubmit.disabled = false;
+          }
+        });
+        sellerListingCancelEdit.addEventListener("click", resetSellerListingForm);
+        sellerListingList.addEventListener("click", async event => {
+          const button = event.target.closest("button");
+          if (!button) return;
+          try {
+            if (button.dataset.deleteListing) {
+              if (!window.confirm("Remove this marketplace listing?")) return;
+              await window.GNK.apiRequest(`/listings/${button.dataset.deleteListing}`, { method: "DELETE" });
+              showSellerListingMessage("Listing removed.");
+              await loadSellerListings();
+            } else if (button.dataset.editListing) {
+              const listings = await loadSellerListings();
+              const listing = listings.find(item => item.id === Number(button.dataset.editListing));
+              if (!listing) throw new Error("That listing is no longer available.");
+              editingListingId = listing.id;
+              document.getElementById("sellerListingTitle").value = listing.title;
+              document.getElementById("sellerListingDescription").value = listing.description;
+              document.getElementById("sellerListingCategory").value = listing.category;
+              document.getElementById("sellerListingCounty").value = listing.county;
+              document.getElementById("sellerListingPrice").value = listing.price;
+              document.getElementById("sellerListingCondition").value = listing.condition;
+              document.getElementById("sellerListingImage").value = listing.imageUrl || "";
+              sellerListingSubmit.textContent = "Save changes for review";
+              sellerListingCancelEdit.hidden = false;
+              document.getElementById("sellerListingTitle").focus();
+            }
+          } catch (error) {
+            showSellerListingMessage(error.message, true);
+          }
+        });
+
       }
 
       function renderAdminDashboard() {
         const primaryPanel = document.getElementById("primaryPanel");
         const secondaryPanel = document.getElementById("secondaryPanel");
         document.getElementById("dashboardIntro").textContent =
-          "Manage accounts and administrator access. Business, advert, package, and payment records are not yet connected to this backend.";
+          "Manage accounts and review seller marketplace listings from the Super Admin control centre.";
         document.getElementById("statsGrid").innerHTML = "";
         primaryPanel.innerHTML = `
           <div class="panel">
@@ -830,6 +1023,45 @@
               <tbody id="adminUsersBody"><tr><td colspan="5">Loading accounts…</td></tr></tbody>
             </table></div>
           </div>`;
+        primaryPanel.insertAdjacentHTML("beforeend", `
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Marketplace listing review</h2>
+              <select id="adminListingStatus" aria-label="Filter listings by status">
+                <option value="pending">Pending review</option>
+                <option value="published">Published</option>
+                <option value="rejected">Rejected</option>
+                <option value="all">All listings</option>
+              </select>
+            </div>
+            <p id="adminListingMessage" role="status" aria-live="polite"></p>
+            <div id="adminListingQueue" class="request-list">Loading listings…</div>
+          </div>`);
+        primaryPanel.insertAdjacentHTML("beforeend", `
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Business directory review</h2>
+              <select id="adminBusinessStatus" aria-label="Filter businesses by status">
+                <option value="pending">Pending review</option>
+                <option value="published">Published</option>
+                <option value="rejected">Rejected</option>
+                <option value="all">All businesses</option>
+              </select>
+            </div>
+            <p id="adminBusinessMessage" role="status" aria-live="polite"></p>
+            <div id="adminBusinessQueue" class="request-list">Loading businesses…</div>
+          </div>`);
+        primaryPanel.insertAdjacentHTML("beforeend", `
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Advertising review</h2>
+              <select id="adminAdvertStatus" aria-label="Filter adverts by status">
+                <option value="pending">Pending review</option>
+                <option value="published">Published</option>
+                <option value="rejected">Rejected</option>
+                <option value="all">All adverts</option>
+              </select>
+            </div>
+            <p id="adminAdvertMessage" role="status" aria-live="polite"></p>
+            <div id="adminAdvertQueue" class="request-list">Loading adverts…</div>
+          </div>`);
         secondaryPanel.innerHTML = `
           <div class="panel">
             <div class="panel-header"><h2>Create account</h2></div>
@@ -842,13 +1074,30 @@
             </form>
           </div>
           <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Advertising packages</h2></div>
+            <form class="video-form" id="adminPackageForm">
+              <input id="adminPackageName" type="text" placeholder="Package name" minlength="2" maxlength="100" required />
+              <textarea id="adminPackageDescription" placeholder="Description" maxlength="1000"></textarea>
+              <input id="adminPackagePrice" type="number" placeholder="Price (KES)" min="0" max="100000000" step="1" required />
+              <input id="adminPackageDuration" type="number" placeholder="Duration in days" min="1" max="3650" required />
+              <select id="adminPackagePlacement" required><option value="standard">Standard</option><option value="featured">Featured</option><option value="banner">Banner</option></select>
+              <input id="adminPackageFeatures" type="text" placeholder="Features, separated by commas" />
+              <button class="primary-btn" id="adminPackageSubmit" type="submit">Create package</button>
+              <button class="secondary-btn" id="adminPackageCancel" type="button" hidden>Cancel edit</button>
+            </form>
+            <p id="adminPackageMessage" role="status" aria-live="polite"></p>
+            <div id="adminPackageList" class="request-list">Loading packages…</div>
+          </div>
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Payment requests</h2></div>
+            <p class="meta">Payment records are read-only here. Advert payment status can only be confirmed by a configured, verified payment provider.</p>
+            <div id="adminPaymentList" class="request-list">Loading payments…</div>
+          </div>
+          <div class="panel" style="margin-top:22px">
             <div class="panel-header"><h2>Recent admin activity</h2></div>
             <div id="adminAuditLog" class="request-list">Loading audit log…</div>
           </div>
-          <div class="panel" style="margin-top:22px">
-            <div class="panel-header"><h2>Other oversight areas</h2></div>
-            <p class="meta">Business approvals, adverts, payments/refunds, packages, analytics, categories, counties, settings, and backups need persistent backend models and APIs before they can be managed here.</p>
-          </div>`;
+          `;
 
         const messageBox = document.getElementById("adminUserMessage");
         const showAdminMessage = (text, isError = false) => {
@@ -862,7 +1111,8 @@
               <tr data-admin-user-row="${user.id}">
                 <td>${escapeHTML(user.name)}</td><td>${escapeHTML(user.email)}</td>
                 <td><select data-user-role="${user.id}" ${user.role === "super_admin" ? "disabled" : ""}>
-                  ${["user", "advertiser", "admin", "super_admin"].map(role => `<option value="${role}" ${role === user.role ? "selected" : ""}>${escapeHTML(role)}</option>`).join("")}
+                  ${user.role === "super_admin" ? '<option value="super_admin" selected>super_admin</option>' : ""}
+                  ${["user", "advertiser", "admin"].map(role => `<option value="${role}" ${role === user.role ? "selected" : ""}>${escapeHTML(role)}</option>`).join("")}
                 </select></td>
                 <td>${user.isActive ? "Active" : "Suspended"}</td>
                 <td>
@@ -873,6 +1123,110 @@
                 </td>
               </tr>`).join("")
             : `<tr><td colspan="5">No matching accounts.</td></tr>`;
+        };
+        const adminListingMessage = document.getElementById("adminListingMessage");
+        const showListingMessage = (text, isError = false) => {
+          adminListingMessage.textContent = text;
+          adminListingMessage.style.color = isError ? "#b42318" : "#0f766e";
+        };
+        const loadListingQueue = async () => {
+          const status = document.getElementById("adminListingStatus").value;
+          const result = await adminRequest(`/admin/listings?status=${encodeURIComponent(status)}`);
+          const queue = document.getElementById("adminListingQueue");
+          queue.innerHTML = result.listings.length
+            ? result.listings.map(listing => `
+              <article class="request-item">
+                <div class="item-top"><h3>${escapeHTML(listing.title)}</h3>
+                  <span class="status ${escapeHTML(listing.status)}">${escapeHTML(listing.status)}</span></div>
+                <p class="meta">${escapeHTML(listing.seller?.name || "Seller")} · ${escapeHTML(listing.seller?.email || "")} · ${escapeHTML(listing.county)}</p>
+                <p class="meta">KES ${Number(listing.price).toLocaleString("en-KE")} · ${escapeHTML(listing.condition)} · ${escapeHTML(listing.category)}</p>
+                <p>${escapeHTML(listing.description)}</p>
+                ${listing.status === "pending" ? `<div class="actions">
+                  <button class="primary-btn" type="button" data-review-listing="${listing.id}" data-review-status="published">Publish</button>
+                  <button class="ghost-btn" type="button" data-review-listing="${listing.id}" data-review-status="rejected">Reject</button>
+                </div>` : ""}
+              </article>`).join("")
+            : '<div class="empty-state">No listings in this queue.</div>';
+        };
+        const businessMessage = document.getElementById("adminBusinessMessage");
+        const showBusinessMessage = (text, isError = false) => {
+          businessMessage.textContent = text;
+          businessMessage.style.color = isError ? "#b42318" : "#0f766e";
+        };
+        const loadBusinessQueue = async () => {
+          const status = document.getElementById("adminBusinessStatus").value;
+          const result = await adminRequest(`/admin/businesses?status=${encodeURIComponent(status)}`);
+          const queue = document.getElementById("adminBusinessQueue");
+          queue.innerHTML = result.businesses.length
+            ? result.businesses.map(business => `
+              <article class="request-item">
+                <div class="item-top"><h3>${escapeHTML(business.name)}</h3>
+                  <span class="status ${escapeHTML(business.status)}">${escapeHTML(business.status)}</span></div>
+                <p class="meta">${escapeHTML(business.owner?.name || "Business owner")} · ${escapeHTML(business.owner?.email || "")} · ${escapeHTML(business.county)}</p>
+                <p class="meta">${escapeHTML(business.category)}${business.phone ? ` · ${escapeHTML(business.phone)}` : ""}</p>
+                <p>${escapeHTML(business.description)}</p>
+                ${business.status === "pending" ? `<div class="actions">
+                  <button class="primary-btn" type="button" data-review-business="${business.id}" data-review-status="published">Publish</button>
+                  <button class="ghost-btn" type="button" data-review-business="${business.id}" data-review-status="rejected">Reject</button>
+                </div>` : ""}
+              </article>`).join("")
+            : '<div class="empty-state">No businesses in this queue.</div>';
+        };
+        const showAdvertMessage = (text, isError = false) => {
+          const element = document.getElementById("adminAdvertMessage");
+          element.textContent = text;
+          element.style.color = isError ? "#b42318" : "#0f766e";
+        };
+        const loadAdvertQueue = async () => {
+          const status = document.getElementById("adminAdvertStatus").value;
+          const result = await adminRequest(`/admin/adverts?status=${encodeURIComponent(status)}`);
+          const queue = document.getElementById("adminAdvertQueue");
+          queue.innerHTML = result.adverts.length
+            ? result.adverts.map(advert => {
+              const isPaid = !advert.packageId || advert.payments.some(payment => payment.status === "successful");
+              return `
+                <article class="request-item">
+                  <div class="item-top"><h3>${escapeHTML(advert.title)}</h3>
+                    <span class="status ${escapeHTML(advert.status)}">${escapeHTML(advert.status)}</span></div>
+                  <p class="meta">${escapeHTML(advert.business?.name || "Business")} · ${escapeHTML(advert.business?.owner?.email || "")} · ${escapeHTML(advert.package?.name || "Unpackaged advert")}</p>
+                  <p>${escapeHTML(advert.description || "")}</p>
+                  ${advert.status === "pending" ? `<div class="actions">
+                    <button class="primary-btn" type="button" data-review-advert="${advert.id}" data-review-status="published" ${isPaid ? "" : "disabled"}>Publish</button>
+                    <button class="ghost-btn" type="button" data-review-advert="${advert.id}" data-review-status="rejected">Reject</button>
+                    ${isPaid ? "" : '<span class="meta">Payment must be verified before publishing.</span>'}
+                  </div>` : ""}
+                </article>`;
+            }).join("")
+            : '<div class="empty-state">No adverts in this queue.</div>';
+        };
+        const loadPackages = async () => {
+          const result = await adminRequest("/admin/packages");
+          const list = document.getElementById("adminPackageList");
+          list.innerHTML = result.packages.length
+            ? result.packages.map(item => `
+              <article class="request-item">
+                <div class="item-top"><h3>${escapeHTML(item.name)}</h3>
+                  <span class="status ${item.isActive ? "published" : "rejected"}">${item.isActive ? "active" : "inactive"}</span></div>
+                <p class="meta">${escapeHTML(item.currency)} ${Number(item.price).toLocaleString("en-KE")} · ${item.durationDays} days · ${escapeHTML(item.placement)}</p>
+                <div class="actions">
+                  <button class="secondary-btn" type="button" data-edit-package="${item.id}">Edit</button>
+                  ${item.isActive ? `<button class="ghost-btn" type="button" data-deactivate-package="${item.id}">Deactivate</button>` : ""}
+                </div>
+              </article>`).join("")
+            : '<div class="empty-state">No packages configured.</div>';
+          return result.packages;
+        };
+        const loadPaymentRequests = async () => {
+          const result = await adminRequest("/admin/payments");
+          const list = document.getElementById("adminPaymentList");
+          list.innerHTML = result.payments.length
+            ? result.payments.map(payment => `
+              <article class="request-item">
+                <div class="item-top"><h3>${escapeHTML(payment.package?.name || "Payment request")}</h3>
+                  <span class="status ${escapeHTML(payment.status)}">${escapeHTML(payment.status)}</span></div>
+                <p class="meta">${escapeHTML(payment.user?.email || "Account")} · ${escapeHTML(payment.currency)} ${Number(payment.amount).toLocaleString("en-KE")} · ${escapeHTML(payment.phone || "")}</p>
+              </article>`).join("")
+            : '<div class="empty-state">No payment requests.</div>';
         };
         const loadAdminData = async () => {
           const [overview, audit] = await Promise.all([
@@ -889,9 +1243,143 @@
             ? audit.logs.map(log => `<article class="request-item"><strong>${escapeHTML(log.action)}</strong><p class="meta">${escapeHTML(log.details)} · ${new Date(log.createdAt).toLocaleString()}</p></article>`).join("")
             : "No admin actions recorded yet.";
           await loadUsers();
+          await loadListingQueue();
+          await loadBusinessQueue();
+          await loadAdvertQueue();
+          await loadPackages();
+          await loadPaymentRequests();
         };
 
         loadAdminData().catch(error => showAdminMessage(error.message, true));
+        document.getElementById("adminListingStatus").addEventListener("change", () => {
+          loadListingQueue().catch(error => showListingMessage(error.message, true));
+        });
+        document.getElementById("adminBusinessStatus").addEventListener("change", () => {
+          loadBusinessQueue().catch(error => showBusinessMessage(error.message, true));
+        });
+        document.getElementById("adminAdvertStatus").addEventListener("change", () => {
+          loadAdvertQueue().catch(error => showAdvertMessage(error.message, true));
+        });
+        document.getElementById("adminBusinessQueue").addEventListener("click", async event => {
+          const button = event.target.closest("[data-review-business]");
+          if (!button) return;
+          button.disabled = true;
+          try {
+            await adminRequest(`/admin/businesses/${button.dataset.reviewBusiness}/review`, {
+              method: "PATCH",
+              body: JSON.stringify({ status: button.dataset.reviewStatus })
+            });
+            showBusinessMessage(`Business ${button.dataset.reviewStatus}.`);
+            await loadBusinessQueue();
+          } catch (error) {
+            showBusinessMessage(error.message, true);
+          } finally {
+            button.disabled = false;
+          }
+        });
+        document.getElementById("adminListingQueue").addEventListener("click", async event => {
+          const button = event.target.closest("[data-review-listing]");
+          if (!button) return;
+          button.disabled = true;
+          try {
+            await adminRequest(`/admin/listings/${button.dataset.reviewListing}/review`, {
+              method: "PATCH",
+              body: JSON.stringify({ status: button.dataset.reviewStatus })
+            });
+            document.getElementById("adminAdvertQueue").addEventListener("click", async event => {
+              const button = event.target.closest("[data-review-advert]");
+              if (!button) return;
+              button.disabled = true;
+              try {
+                await adminRequest(`/admin/adverts/${button.dataset.reviewAdvert}/review`, {
+                  method: "PATCH",
+                  body: JSON.stringify({ status: button.dataset.reviewStatus })
+                });
+                showAdvertMessage(`Advert ${button.dataset.reviewStatus}.`);
+                await loadAdvertQueue();
+                await loadAdminData();
+              } catch (error) {
+                showAdvertMessage(error.message, true);
+              } finally {
+                button.disabled = false;
+              }
+            });
+            let editingPackageId = null;
+            const packageForm = document.getElementById("adminPackageForm");
+            const packageMessage = document.getElementById("adminPackageMessage");
+            const packageSubmit = document.getElementById("adminPackageSubmit");
+            const packageCancel = document.getElementById("adminPackageCancel");
+            const showPackageMessage = (text, isError = false) => {
+              packageMessage.textContent = text;
+              packageMessage.style.color = isError ? "#b42318" : "#0f766e";
+            };
+            const resetPackageForm = () => {
+              editingPackageId = null;
+              packageForm.reset();
+              packageSubmit.textContent = "Create package";
+              packageCancel.hidden = true;
+            };
+            packageForm.addEventListener("submit", async event => {
+              event.preventDefault();
+              packageSubmit.disabled = true;
+              const data = {
+                name: document.getElementById("adminPackageName").value.trim(),
+                description: document.getElementById("adminPackageDescription").value.trim(),
+                price: Number(document.getElementById("adminPackagePrice").value),
+                durationDays: Number(document.getElementById("adminPackageDuration").value),
+                placement: document.getElementById("adminPackagePlacement").value,
+                features: document.getElementById("adminPackageFeatures").value.split(",").map(value => value.trim()).filter(Boolean)
+              };
+              try {
+                await adminRequest(editingPackageId ? `/admin/packages/${editingPackageId}` : "/admin/packages", {
+                  method: editingPackageId ? "PATCH" : "POST",
+                  body: JSON.stringify(data)
+                });
+                showPackageMessage(editingPackageId ? "Package updated." : "Package created.");
+                resetPackageForm();
+                await loadPackages();
+              } catch (error) {
+                showPackageMessage(error.message, true);
+              } finally {
+                packageSubmit.disabled = false;
+              }
+            });
+            packageCancel.addEventListener("click", resetPackageForm);
+            document.getElementById("adminPackageList").addEventListener("click", async event => {
+              const button = event.target.closest("button");
+              if (!button) return;
+              try {
+                if (button.dataset.deactivatePackage) {
+                  if (!window.confirm("Deactivate this package? Existing payment records will remain.")) return;
+                  await adminRequest(`/admin/packages/${button.dataset.deactivatePackage}`, { method: "DELETE" });
+                  showPackageMessage("Package deactivated.");
+                  await loadPackages();
+                } else if (button.dataset.editPackage) {
+                  const packages = await loadPackages();
+                  const item = packages.find(entry => entry.id === Number(button.dataset.editPackage));
+                  if (!item) throw new Error("Package no longer exists.");
+                  editingPackageId = item.id;
+                  document.getElementById("adminPackageName").value = item.name;
+                  document.getElementById("adminPackageDescription").value = item.description || "";
+                  document.getElementById("adminPackagePrice").value = item.price;
+                  document.getElementById("adminPackageDuration").value = item.durationDays;
+                  document.getElementById("adminPackagePlacement").value = item.placement;
+                  document.getElementById("adminPackageFeatures").value = JSON.parse(item.features || "[]").join(", ");
+                  packageSubmit.textContent = "Save package";
+                  packageCancel.hidden = false;
+                }
+              } catch (error) {
+                showPackageMessage(error.message, true);
+              }
+            });
+            showListingMessage(`Listing ${button.dataset.reviewStatus}.`);
+            await loadListingQueue();
+          } catch (error) {
+            showListingMessage(error.message, true);
+          } finally {
+            button.disabled = false;
+          }
+        });
         document.getElementById("adminUserSearch").addEventListener("input", event => {
           loadUsers(event.target.value).catch(error => showAdminMessage(error.message, true));
         });
@@ -968,8 +1456,248 @@
           renderAdminDashboard();
         } else {
           renderStats();
-          renderUserDashboard(user);
+          renderStats();
+          renderUserDashboard(user).catch(error => {
+            document.getElementById("dashboardIntro").textContent = error.message || "Unable to load account data.";
+          });
         }
+      }
+
+      function renderUserDemo() {
+        document.title = "User Demo | Global Network Kenya";
+        document.getElementById("logoutBtn").textContent = "Exit demo";
+        document.getElementById("welcomeTitle").textContent = "User Dashboard (Demo)";
+        document.getElementById("dashboardIntro").textContent =
+          "You are signed in to a simulated sample user account. No real account or data is accessed or changed.";
+        document.getElementById("roleBadge").textContent = "DEMO · SAMPLE DATA";
+        document.getElementById("packagePrompt").style.display = "none";
+        document.getElementById("statsGrid").innerHTML = `
+          <article class="stat-card"><div class="label">My businesses</div><div class="value">2</div></article>
+          <article class="stat-card"><div class="label">Marketplace listings</div><div class="value">3</div></article>
+          <article class="stat-card"><div class="label">My adverts</div><div class="value">1</div></article>
+          <article class="stat-card"><div class="label">Pending payments</div><div class="value">1</div></article>`;
+        document.getElementById("primaryPanel").innerHTML = `
+          <div class="panel">
+            <div class="panel-header"><h2>My account</h2><span class="pill">Sample profile</span></div>
+            <div class="request-list">
+              <article class="request-item"><div class="item-top"><h3>Amina Wekesa</h3><span class="status active">User</span></div><p class="meta">amina@example.test · Nakuru County</p></article>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>My businesses</h2><span class="pill">Examples</span></div>
+            <div class="request-list">
+              <article class="request-item"><div class="item-top"><h3>Savanna Harvest Co.</h3><span class="status approved">Approved</span></div><p class="meta">Agriculture · Nakuru</p></article>
+              <article class="request-item"><div class="item-top"><h3>Rift Valley Fresh Foods</h3><span class="status pending">Under review</span></div><p class="meta">Food &amp; Retail · Nakuru</p></article>
+            </div>
+          </div>`;
+        document.getElementById("secondaryPanel").innerHTML = `
+          <div class="panel">
+            <div class="panel-header"><h2>Discover adverts</h2><span class="pill">Sample advert</span></div>
+            <article class="request-item advert-card">
+              <div class="item-top"><h3>Fresh from Nakuru farms</h3><span class="tag">Featured advert</span></div>
+              <p class="meta">Savanna Harvest Co. · Nakuru</p>
+              <p>Locally grown produce, freshly picked and ready for your table.</p>
+              <details><summary>View advert</summary><p>This is sample demo content. Sign in to view published adverts from the live network.</p></details>
+            </article>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2>Marketplace listings</h2><span class="pill">Examples</span></div>
+            <div class="request-list">
+              <article class="request-item"><div class="item-top"><h3>Fresh avocados (crate)</h3><span class="status published">Published</span></div><p class="meta">KES 2,500 · Nakuru</p></article>
+              <article class="request-item"><div class="item-top"><h3>Organic honey</h3><span class="status pending">Pending</span></div><p class="meta">KES 800 · Nakuru</p></article>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Recent activity</h2><span class="pill">Examples</span></div>
+            <div class="request-list">
+              <article class="request-item"><div class="item-top"><h3>Featured advert request</h3><span class="status review">In review</span></div><p class="meta">Savanna Harvest Co. · Sample request</p></article>
+              <article class="request-item"><div class="item-top"><h3>Marketplace payment</h3><span class="status pending">Pending</span></div><p class="meta">KES 1,500 · Sample transaction</p></article>
+            </div>
+          </div>
+          <a class="primary-btn" style="display:inline-flex;margin-top:18px" href="pages/login.html">Return to login</a>`;
+      }
+
+      function renderAdvertiserDemo() {
+        const campaigns = [
+          {
+            id: 1,
+            title: "Build your brand online",
+            placement: "Featured",
+            status: "Published",
+            description: "Creative websites and digital campaigns designed for growing Kenyan businesses.",
+            schedule: "1–30 November 2026",
+            budget: "KES 5,000"
+          },
+          {
+            id: 2,
+            title: "Small business launch offer",
+            placement: "Standard",
+            status: "Under review",
+            description: "A sample campaign introducing Wazi Digital Studio services to new local businesses.",
+            schedule: "Starts after approval",
+            budget: "KES 2,500"
+          },
+          {
+            id: 3,
+            title: "Design that connects",
+            placement: "Featured",
+            status: "Needs changes",
+            description: "A sample campaign draft returned for an updated image and clearer call to action.",
+            schedule: "Not scheduled",
+            budget: "KES 5,000"
+          }
+        ];
+
+        document.title = "Advertiser Demo | Global Network Kenya";
+        document.getElementById("logoutBtn").textContent = "Exit demo";
+        document.getElementById("welcomeTitle").textContent = "Advertiser Dashboard (Demo)";
+        document.getElementById("dashboardIntro").textContent =
+          "Manage a sample business profile, review campaign statuses, explore ad placements, and preview payment information. Everything here is demo-only.";
+        document.getElementById("roleBadge").textContent = "DEMO · ADVERTISER";
+        document.getElementById("packagePrompt").style.display = "none";
+        document.getElementById("statsGrid").innerHTML = `
+          <article class="stat-card"><div class="label">Businesses</div><div class="value">1</div></article>
+          <article class="stat-card"><div class="label">Total campaigns</div><div class="value" id="demoCampaignCount">3</div></article>
+          <article class="stat-card"><div class="label">Published adverts</div><div class="value" id="demoPublishedCount">1</div></article>
+          <article class="stat-card"><div class="label">Campaigns in review</div><div class="value" id="demoReviewCount">1</div></article>`;
+        document.getElementById("primaryPanel").innerHTML = `
+          <div class="panel" style="margin-bottom:22px">
+            <div class="panel-header">
+              <div>
+                <h2>Businesses shining with RIOBA</h2>
+                <p class="meta">Illustrative campaign artwork showing how advertising can help ambitious businesses stand out.</p>
+              </div>
+              <span class="pill">RIOBA · DEMO CAMPAIGN</span>
+            </div>
+            <div class="rioba-showcase">
+              <article class="rioba-showcase-card">
+                <img src="assets/rioba-business-tower.svg" alt="RIOBA illustration of a thriving business district at sunrise" loading="lazy">
+                <h3>Big ideas. Brighter business.</h3>
+                <p>Campaign concept: help established businesses reach more customers.</p>
+              </article>
+              <article class="rioba-showcase-card">
+                <img src="assets/rioba-retail-growth.svg" alt="RIOBA illustration of successful local shops glowing together" loading="lazy">
+                <h3>Local businesses, in the spotlight</h3>
+                <p>Campaign concept: make retail brands easier to discover across Kenya.</p>
+              </article>
+              <article class="rioba-showcase-card">
+                <img src="assets/rioba-innovation-hub.svg" alt="RIOBA illustration of a modern innovation campus with rising lights" loading="lazy">
+                <h3>Make your next move visible</h3>
+                <p>Campaign concept: give growing companies a brighter digital presence.</p>
+              </article>
+            </div>
+            <p class="meta" style="margin-top:14px">Original demo illustrations. RIOBA results and featured businesses shown here are not real customer testimonials.</p>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2>Business profile</h2><span class="pill">Sample account</span></div>
+            <div class="request-list">
+              <article class="request-item">
+                <div class="item-top"><h3>Wazi Digital Studio</h3><span class="status approved">Approved</span></div>
+                <p class="meta">Technology &amp; Creative Services · Nairobi County</p>
+                <p>Helping Kenyan businesses grow with practical digital marketing, web design, and branding.</p>
+                <p class="meta">Contact: demo@wazi.example · 0118 237749</p>
+                <p class="meta">Business profile visibility: Published</p>
+              </article>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Campaign performance</h2><span class="pill">Illustrative metrics</span></div>
+            <div class="request-list">
+              <article class="request-item"><div class="item-top"><h3>Impressions</h3><span class="tag">This month</span></div><p class="meta">12,480 sample advert views</p></article>
+              <article class="request-item"><div class="item-top"><h3>Advert visits</h3><span class="tag">This month</span></div><p class="meta">346 sample visits · 2.8% illustrative engagement</p></article>
+              <article class="request-item"><div class="item-top"><h3>Campaign reach</h3><span class="tag">Nairobi</span></div><p class="meta">Sample audience across Nairobi County. Live analytics are not connected.</p></article>
+            </div>
+          </div>`;
+        document.getElementById("secondaryPanel").innerHTML = `
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Campaigns and adverts</h2>
+              <button class="primary-btn" id="demoCreateCampaign" type="button">Create demo campaign</button>
+            </div>
+            <p class="meta">Review each campaign’s placement, schedule, budget, and approval status.</p>
+            <p id="demoCampaignMessage" class="meta" role="status" aria-live="polite"></p>
+            <form class="video-form" id="demoCampaignForm" hidden>
+              <input id="demoCampaignTitle" type="text" placeholder="Campaign title" minlength="3" maxlength="150" required />
+              <textarea id="demoCampaignDescription" placeholder="Describe the advert" maxlength="500" required></textarea>
+              <select id="demoCampaignPlacement" required>
+                <option value="Standard">Standard placement</option>
+                <option value="Featured">Featured placement</option>
+                <option value="Banner">Banner placement</option>
+              </select>
+              <button class="primary-btn" type="submit">Save sample campaign</button>
+            </form>
+            <div class="request-list" id="demoCampaignList"></div>
+          </div>
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Ad packages</h2><span class="pill">Examples</span></div>
+            <div class="request-list">
+              <article class="request-item"><div class="item-top"><h3>Standard</h3><span class="tag">KES 2,500 / 30 days</span></div><p class="meta">Directory placement for a campaign.</p></article>
+              <article class="request-item"><div class="item-top"><h3>Featured</h3><span class="tag">KES 5,000 / 30 days</span></div><p class="meta">Priority placement for increased visibility.</p></article>
+              <article class="request-item"><div class="item-top"><h3>Banner</h3><span class="tag">Sample package</span></div><p class="meta">Prominent banner placement. Contact the team for a quote.</p></article>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:22px">
+            <div class="panel-header"><h2>Payments and billing</h2><span class="pill">Sample data</span></div>
+            <div class="request-list">
+              <article class="request-item"><div class="item-top"><h3>Featured campaign</h3><span class="status approved">Paid</span></div><p class="meta">KES 5,000 · Paid 2 Nov 2026 · Example transaction</p></article>
+              <article class="request-item"><div class="item-top"><h3>Small business launch offer</h3><span class="status pending">Pending</span></div><p class="meta">KES 2,500 · Example payment request</p></article>
+            </div>
+            <p class="meta">Demo payments do not process money.</p>
+          </div>
+          <a class="primary-btn" style="display:inline-flex;margin-top:18px" href="pages/login.html">Return to login</a>`;
+
+        const campaignList = document.getElementById("demoCampaignList");
+        const campaignForm = document.getElementById("demoCampaignForm");
+        const campaignMessage = document.getElementById("demoCampaignMessage");
+        const statusClass = status => ({
+          Published: "published",
+          "Under review": "pending",
+          "Needs changes": "rejected",
+          Draft: "review"
+        })[status] || "pending";
+        const renderCampaigns = () => {
+          campaignList.innerHTML = campaigns.map(campaign => `
+            <article class="request-item">
+              <div class="item-top">
+                <h3>${escapeHTML(campaign.title)}</h3>
+                <span class="status ${statusClass(campaign.status)}">${escapeHTML(campaign.status)}</span>
+              </div>
+              <p class="meta">Wazi Digital Studio · ${escapeHTML(campaign.placement)} placement · ${escapeHTML(campaign.budget)}</p>
+              <details>
+                <summary>View campaign details</summary>
+                <p>${escapeHTML(campaign.description)}</p>
+                <p class="meta">Schedule: ${escapeHTML(campaign.schedule)} · Demo only</p>
+              </details>
+            </article>`).join("");
+          document.getElementById("demoCampaignCount").textContent = campaigns.length;
+          document.getElementById("demoPublishedCount").textContent =
+            campaigns.filter(campaign => campaign.status === "Published").length;
+          document.getElementById("demoReviewCount").textContent =
+            campaigns.filter(campaign => campaign.status === "Under review").length;
+        };
+
+        document.getElementById("demoCreateCampaign").addEventListener("click", () => {
+          campaignForm.hidden = !campaignForm.hidden;
+          campaignMessage.textContent = "";
+          if (!campaignForm.hidden) document.getElementById("demoCampaignTitle").focus();
+        });
+        campaignForm.addEventListener("submit", event => {
+          event.preventDefault();
+          campaigns.unshift({
+            id: Date.now(),
+            title: document.getElementById("demoCampaignTitle").value.trim(),
+            placement: document.getElementById("demoCampaignPlacement").value,
+            status: "Draft",
+            description: document.getElementById("demoCampaignDescription").value.trim(),
+            schedule: "Not scheduled",
+            budget: "Not set"
+          });
+          renderCampaigns();
+          campaignForm.reset();
+          campaignForm.hidden = true;
+          campaignMessage.textContent = "Sample campaign saved as a draft. No real advert or account was changed.";
+        });
+        renderCampaigns();
       }
 
       function renderSuperAdminDemo() {
@@ -1068,24 +1796,30 @@
       }
 
       document.getElementById("logoutBtn").addEventListener("click", () => {
-        if (new URLSearchParams(window.location.search).get("demo") === "super-admin") {
+        if (["super-admin", "user", "advertiser"].includes(new URLSearchParams(window.location.search).get("demo"))) {
           window.location.href = "pages/login.html";
           return;
         }
-        clearSession();
-        window.location.href = "pages/login.html";
+        window.GNK.logout();
       });
 
       document.addEventListener("DOMContentLoaded", () => {
         showPackagePromptIfNeeded();
-        if (new URLSearchParams(window.location.search).get("demo") === "super-admin") {
-          renderSuperAdminDemo();
+        const demoMode = new URLSearchParams(window.location.search).get("demo");
+        if (["super-admin", "user", "advertiser"].includes(demoMode)) {
+          if (demoMode === "super-admin") {
+            renderSuperAdminDemo();
+          } else if (demoMode === "user") {
+            renderUserDemo();
+          } else {
+            renderAdvertiserDemo();
+          }
           return;
         }
 
         loadAuthenticatedUser().then(user => {
           if (!user) {
-            clearSession();
+            window.GNK.clearSession();
             window.location.href = "pages/login.html";
             return;
           }

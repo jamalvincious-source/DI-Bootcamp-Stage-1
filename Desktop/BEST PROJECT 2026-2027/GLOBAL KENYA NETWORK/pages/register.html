@@ -16,11 +16,40 @@
       .auth-shell {
         min-height: 100vh;
         display: grid;
-        place-items: center;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        align-items: center;
+        gap: clamp(24px, 5vw, 64px);
+        width: min(1120px, 100%);
+        margin: 0 auto;
         padding: 40px 20px;
       }
+      .auth-visual {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        min-width: 0;
+        min-height: 300px;
+        aspect-ratio: 1.4;
+        border-radius: 22px;
+        background: #082b57;
+        box-shadow: 0 24px 60px rgba(11, 59, 120, 0.2);
+        perspective: 1100px;
+      }
+      .auth-visual-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        animation: auth-image-swing 5.5s ease-in-out infinite alternate;
+        transform-origin: center;
+        will-change: transform;
+      }
+      @keyframes auth-image-swing {
+        from { transform: rotateY(-6deg) translateX(-5px) scale(1.06); }
+        to { transform: rotateY(6deg) translateX(5px) scale(1.06); }
+      }
       .auth-card {
-        width: min(100%, 520px);
+        width: 100%;
+        min-width: 0;
         background: #fff;
         border: 1px solid #e2e8f0;
         border-radius: 18px;
@@ -124,7 +153,16 @@
         border: 1px solid #bbf7d0;
         color: #166534;
       }
-      @media (max-width: 560px) {
+      @media (max-width: 760px) {
+        .auth-shell {
+          grid-template-columns: minmax(0, 1fr);
+          max-width: 560px;
+          gap: 20px;
+        }
+        .auth-visual {
+          min-height: 0;
+          aspect-ratio: 1.8;
+        }
         .form-grid {
           grid-template-columns: 1fr;
         }
@@ -132,10 +170,22 @@
           padding: 24px 18px;
         }
       }
+      @media (prefers-reduced-motion: reduce) {
+        .auth-visual-image {
+          animation: none;
+        }
+      }
     </style>
   </head>
   <body>
     <div class="auth-shell">
+      <aside class="auth-visual">
+        <img
+          class="auth-visual-image"
+          src="../assets/global-network-kenya-brand.jpg"
+          alt="Global Network Kenya billboard connecting Kenya to the world"
+        />
+      </aside>
       <div class="auth-card">
         <div class="auth-header">
           <div class="brand-mark">G</div>
@@ -186,8 +236,6 @@
     </div>
 
     <script>
-      const API_URL = "http://localhost:3000/api";
-
       function setMessage(text, type = "error") {
         const box = document.getElementById("messageBox");
         box.textContent = text;
@@ -227,21 +275,13 @@
           setMessage("");
 
           try {
-            const response = await fetch(`${API_URL}/auth/register`, {
+            const result = await window.GNK.apiRequest("/auth/register", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
               body: JSON.stringify({ name, email, phone, password, role })
             });
 
-            const result = await response.json().catch(() => ({ message: "Invalid server response." }));
-
-            if (!response.ok) {
-              throw new Error(result.message || "Registration failed.");
-            }
-
-            window.location.href = "login.html?registered=1";
+            window.GNK.saveSession(result.user);
+            window.location.href = "../dashboard.html";
           } catch (error) {
             setMessage(error.message || "Unable to create account. Please try again.", "error");
           } finally {

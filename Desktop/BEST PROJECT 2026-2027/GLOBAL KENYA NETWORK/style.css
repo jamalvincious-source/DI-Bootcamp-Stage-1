@@ -58,7 +58,9 @@ body {
     font-size: 16px;
     line-height: 1.6;
     color: var(--text);
-    background: var(--background);
+    background:
+        linear-gradient(rgba(247, 249, 252, 0.76), rgba(247, 249, 252, 0.76)),
+        url("assets/global-network-kenya-brand.jpg") center / cover fixed !important;
 }
 
 img {
@@ -423,7 +425,7 @@ p {
 .hero p {
     max-width: 720px;
     margin: 0 auto 28px;
-    color: rgba(255, 255, 255, 0.88);
+    color: rgba(196, 128, 128, 0.88);
     font-size: 1.1rem;
 }
 
@@ -730,6 +732,7 @@ p {
     color: #475467;
     font-size: 0.92rem;
     -webkit-box-orient: vertical;
+    line-clamp: 3;
     -webkit-line-clamp: 3;
 }
 
