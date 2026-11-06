@@ -40,8 +40,8 @@ The API health check is available at `http://localhost:3000/api/health`.
 
 The `render.yaml` Blueprint creates a static frontend, an Express API, and a persistent PostgreSQL database. The API uses Render's free web-service plan, which may sleep when idle; the PostgreSQL database uses Render's paid `basic-256mb` plan.
 
-1. Push this project to a GitHub repository you control. The Render Blueprint file must be at the repository root.
-2. In Render, choose **New → Blueprint**, connect the repository, and apply the `render.yaml` Blueprint. Review Render's current prices before confirming the paid database.
+1. Push this project to the `jamalvincious-source/DI-Bootcamp-Stage-1` GitHub repository. This project is in `Desktop/BEST PROJECT 2026-2027/GLOBAL KENYA NETWORK`.
+2. In Render, choose **New → Blueprint**, connect the repository, and set **Blueprint Path** to `Desktop/BEST PROJECT 2026-2027/GLOBAL KENYA NETWORK/render.yaml`. Review Render's current prices before confirming the paid database.
 3. After the services are created, open the API service's environment settings and set `FRONTEND_BASE_URL` to the HTTPS URL of the static site. Configure any optional email or Super Admin variables there as needed; never commit secrets.
 4. Open the static site URL. Its build uses the API service hostname to configure frontend API requests.
 

@@ -6,10 +6,16 @@ const path = require("path");
 const projectRoot = path.resolve(__dirname, "..");
 const outputDirectory = path.join(projectRoot, "dist");
 const apiHost = process.env.API_HOST;
+const normalizedHost = (apiHost || "").trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
 
-if (!apiHost || !/^[a-z0-9.-]+$/i.test(apiHost)) {
-    throw new Error("Set API_HOST to the Render API service hostname before building the frontend.");
+if (!normalizedHost || !/^(?:localhost|127\.0\.0\.1|0\.0\.0\.0|\[[0-9a-fA-F:]+\]|[a-z0-9.-]+)(?::\d+)?$/i.test(normalizedHost)) {
+    throw new Error("Set API_HOST to the Render API service hostname or localhost before building the frontend.");
 }
+
+const isLocalHost = /^(?:localhost|127\.0\.0\.1|0\.0\.0\.0|\[[0-9a-fA-F:]+\])(?::\d+)?$/i.test(normalizedHost);
+const apiOrigin = isLocalHost
+    ? `http://${normalizedHost.includes(":") ? normalizedHost : `${normalizedHost}:3000`}`
+    : `https://${normalizedHost}`;
 
 fs.rmSync(outputDirectory, { recursive: true, force: true });
 fs.mkdirSync(outputDirectory, { recursive: true });
@@ -52,7 +58,7 @@ for (const relativePath of htmlFiles) {
     fs.writeFileSync(htmlPath, configuredHtml);
 }
 
-const apiBaseUrl = `https://${apiHost}/api`;
+const apiBaseUrl = `${apiOrigin}/api`;
 fs.writeFileSync(
     path.join(outputDirectory, "runtime-config.js"),
     `window.GNK_API_BASE_URL = ${JSON.stringify(apiBaseUrl)};\n`
